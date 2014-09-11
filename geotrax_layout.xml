@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<layout>
+  <piece>
+    <name>SLICE</name>
+    <x>13</x>
+    <y>13</y>
+    <orientation>1</orientation>
+  </piece>
+  <piece>
+    <name>CURVE</name>
+    <x>4</x>
+    <y>13</y>
+    <orientation>2</orientation>
+  </piece>
+  <piece>
+    <name>RAIL_DROIT_COURT</name>
+    <x>2</x>
+    <y>19</y>
+    <orientation>2</orientation>
+  </piece>
+  <piece>
+    <name>RAIL_DROIT_COURT</name>
+    <x>18</x>
+    <y>14</y>
+    <orientation>1</orientation>
+  </piece>
+</layout>

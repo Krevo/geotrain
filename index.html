@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script type="text/javascript" src="js/geotrain.js"></script>
+    <script type="text/javascript" src="js/clipper.js"></script>
+  </head>
+  <body bgcolor="white" onload="init();" >
+    <div>
+    <h1 style="font-size: 20px">Train  layout designer / maker by François CREVOLA </h1>
+    <!-- francois (AT) crevola (DOT) org -->
+    For more informations and instructions of use, see the <a href="tutorial.html">online help and watch the video tutorial</a> or <a href="http://www.flickr.com/photos/46225254@N00/sets/72157630210133604/">see example of what can done</a>. (Contact me at francois (AT) crevola (DOT) org)
+    </div>
+    <div>
+        <canvas id="geocommand" width="100" height="920" ><img src="geotrax_layout_no_canvas.png" ></canvas>
+        <canvas style="position: absolute; z-index: -1; " id="geocanvasbg" width="1800" height="920" ><img src="geotrax_layout_no_canvas.png" ></canvas>
+        <canvas style="position: absolute; z-index: 0;" id="geocanvas" width="1800" height="920" ><img src="geotrax_layout_no_canvas.png" ></canvas>
+        <canvas style="position: absolute; z-index: 1; " id="geocanvasfg" width="1800" height="920" ><img src="geotrax_layout_no_canvas.png" ></canvas>
+    </div>
+  </body>
+</html>
