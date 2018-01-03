@@ -232,19 +232,7 @@ function ev_mousemove(ev) {
   drawArrowLeft = inArea(mousePos.x,mousePos.y,moveLeftArea);
   drawArrowRight = inArea(mousePos.x,mousePos.y,moveRightArea);
 
-
-  Today = new Date;
-  start  =Today.getTime();
-
-  n=1;
-  for (var i=0; i<n; i++) {
-    redrawForeground();
-  }
-
-  Today = new Date;
-  stop  =Today.getTime();
-  //console.log("n = "+n+" start ="+start+" stop = "+stop);
-  //console.log((stop-start)/n+" ms");
+  redrawForeground();
 
   if (selecting) {
     ctx.strokeStyle = "Red";
