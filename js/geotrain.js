@@ -889,11 +889,17 @@ function calculateRailDroit() {
   translation(addedPaths,dec.dx,dec.dy);
 
   var orient1 = makeOrientation(polys,addedPaths,0);
-  var orient2 = makeOrientation(polys,addedPaths,Math.PI/2);
+  var orient2 = makeOrientation(polys,addedPaths, Math.PI/6);
+  var orient3 = makeOrientation(polys,addedPaths,Math.PI/4);
+  var orient4 = makeOrientation(polys,addedPaths, Math.PI/3);
+  var orient5 = makeOrientation(polys,addedPaths,Math.PI/2);
+  var orient6 = makeOrientation(polys,addedPaths, -Math.PI/3);
+  var orient7 = makeOrientation(polys,addedPaths, -Math.PI/4);
+  var orient8 = makeOrientation(polys,addedPaths, -Math.PI/6);
 
   return {
     name: name,
-    points: [orient1, orient2]
+    points: [orient1, orient2, orient3, orient4, orient5, orient6, orient7, orient8]
   }
 
 }
