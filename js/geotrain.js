@@ -298,7 +298,7 @@ function moveMap() {
 function ev_mouseclick(ev) {
 
   if (drag) { // case "drop of a piece"
-    map.push(new Array(Math.round(mousePos.x/ur)-globaldx,Math.round(mousePos.y/ur)-globaldy,pieces[indexPieces].name,dragOrientation));
+    map.push([mousePos.x/ur-globaldx, mousePos.y/ur-globaldy, pieces[indexPieces].name, dragOrientation]);
     if (!infinite) { drag = false; }
     redrawMap();
     redrawForeground();
@@ -441,7 +441,7 @@ function redrawForeground() {
 
   // Draw the piece that is under the mouse pointer
   if (drag && typeof(mousePos)!='undefined') {
-   renderPiece(ctx,Math.round(mousePos.x/ur)*ur,Math.round(mousePos.y/ur)*ur,pieces[indexPieces].name,dragOrientation);
+   renderPiece(ctx, mousePos.x, mousePos.y, pieces[indexPieces].name, dragOrientation);
   }
 
   var l = Math.max(canvas.width*0.02,canvas.height*0.02);
