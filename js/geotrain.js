@@ -1,21 +1,8 @@
-/* TODO :
- - (11/06) zoom in/out (use "+" or "-" on numPad or mouseWheel")
- - (11/06) merge arrondi / arrondiSeg (see ArrayCopy), rotation / rotationSeg, translation / translationSeg
- - (13/06) move map up, down, left, right, that means : use globaldx / globaldy for :
-   - (DONE) map render
-   - (DONE) put piece on the map
-   - (DONE) take piece on the map
-   - (DONE) merge
-  - (DONE) "overlayed" move icons (when done remove use of "U", "H", "J", "N" keys to move the map)
-  - (DONE) better zoom (center the map)
-  - zoom in/out icons (remove the use of "+" and "-" keys but keep mousewheel)
- - ...
-*/
-
 /*
  Train  layout designer / maker
 
 Author : François Crevola - francois(AT)crevola(DOT)org
+Source repository :  https://github.com/Krevo/geotrain
 
 1. This software include the "Clipper Library" under the Boost Software Licence
 (see clipper.js)
@@ -228,7 +215,7 @@ function ev_mousedown(ev) {
   console.log("MOUSE DOWN AT x = "+mousePos.x+" Y = "+mousePos.y);
   startSelectingX = mousePos.x;
   startSelectingY = mousePos.y;
-  selecting = true; // On se place en mode "selection en cours"
+  selecting = true; // We are now on mode "cirrently selecting"
 }
 
 // An area is defined by area[0],area[1] (upper left point) and area[2],area[3] (lower right point)
