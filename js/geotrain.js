@@ -5,7 +5,7 @@
    - (DONE) map render
    - (DONE) put piece on the map
    - (DONE) take piece on the map
-   - (DONE) merge 
+   - (DONE) merge
   - (DONE) "overlayed" move icons (when done remove use of "U", "H", "J", "N" keys to move the map)
   - (DONE) better zoom (center the map)
   - zoom in/out icons (remove the use of "+" and "-" keys but keep mousewheel)
@@ -13,9 +13,9 @@
 */
 
 /*
- Train  layout designer / maker 
+ Train  layout designer / maker
 
-Author : François Crevola - francois(AT)crevola(DOT)org
+Author : FranÃ§ois Crevola - francois(AT)crevola(DOT)org
 
 1. This software include the "Clipper Library" under the Boost Software Licence
 (see clipper.js)
@@ -23,13 +23,13 @@ Author : François Crevola - francois(AT)crevola(DOT)org
 2. This software is licensed under BSD Licence :
 
 Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met: 
+modification, are permitted provided that the following conditions are met:
 
 1. Redistributions of source code must retain the above copyright notice, this
-   list of conditions and the following disclaimer. 
+   list of conditions and the following disclaimer.
 2. Redistributions in binary form must reproduce the above copyright notice,
    this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution. 
+   and/or other materials provided with the distribution.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -44,30 +44,30 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
 
- var u = 100; // Base unit for calculating pieces coordinates 
+ var u = 100; // Base unit for calculating pieces coordinates
  var ur = 15; // Current number of pixels for a square / grid width and height
 // ratio = 15/100 = 0,15
 
  var ur_min = 2;
  var ur_max = 35;
- 
+
  var NE = 1;
  var SE = 2;
  var SO = 3;
- var NO = 4; 
-  
+ var NO = 4;
+
  var H = 1;
  var V = 2;
- 
- // These 2 variables are used to move the map by (globaldx * ur) for x coordinates and (globaldy * ur) for y coordinates 
+
+ // These 2 variables are used to move the map by (globaldx * ur) for x coordinates and (globaldy * ur) for y coordinates
  var globaldx = 0;
  var globaldy = 0;
 
 var mousePos;
 
-var selecting = false; // En cours de selection pour fusion
+var selecting = false; // Flag for currently selecting pieces for merge
 
-var showRefPoint = false;  
+var showRefPoint = false;
 var showPath = false;
 var showGrid = true
 var usePaint = false;
@@ -91,31 +91,31 @@ var drawArrowRight = false;
 
 var pieces = new Array();
 
-var map = new Array(); 
+var map = new Array();
 
  function init() {
 
   canvas = document.getElementById("geocanvasfg");
   bgcanvas = document.getElementById("geocanvasbg");
   mapcanvas = document.getElementById("geocanvas");
-  
+
   commandPanel = document.getElementById("geocommand");
 
   // type of event : mouseup, mousemove, mousedown, click,
-  canvas.addEventListener("mousemove", ev_mousemove, false);  
+  canvas.addEventListener("mousemove", ev_mousemove, false);
 
-  // Je veux traquer le debut et la fin de l'entourage de pieces, pour la fusion
+  // I want to follow start and end of selecting pieces, for a merge
   canvas.addEventListener("mousedown", ev_mousedown, false);
-  canvas.addEventListener("mouseup", ev_mouseup, false);  
+  canvas.addEventListener("mouseup", ev_mouseup, false);
 
   // IE9, Chrome, Safari, Opera
   canvas.addEventListener("mousewheel", MouseWheelHandler, false);
   // Firefox
   canvas.addEventListener("DOMMouseScroll", MouseWheelHandler, false);
 
-  canvas.addEventListener("click", ev_mouseclick, false);    
+  canvas.addEventListener("click", ev_mouseclick, false);
   if (window.addEventListener){
-    window.addEventListener("keydown", ev_keypress, false); 
+    window.addEventListener("keydown", ev_keypress, false);
   } else if (window.attachEvent){ // IE sucks !
     window.attachEvent("keydown", ev_keypress, false);
   }
@@ -155,7 +155,7 @@ var map = new Array();
 
   l = Math.max(canvas.width*0.02,canvas.height*0.02);
   w = 25;
-  
+
   moveUpArea = [0,0,canvas.width,w];
   moveDownArea = [0,canvas.height-w,canvas.width,canvas.height];
   moveLeftArea = [0,0,w,canvas.height];
@@ -168,7 +168,7 @@ var map = new Array();
 function findPieceIndexByName(name) {
 
    for (var i=0; i<pieces.length; i++) {
-      if (pieces[i].name==name) { // On a trouvé la piece demandée
+      if (pieces[i].name==name) { // On a trouvÃ© la piece demandÃ©e
         return i;
       }
    }
@@ -180,12 +180,12 @@ function renderPiece(ctx,x,y,name,orientation) {
     i = findPieceIndexByName(name);
     if (i!=-1) {
       pieceToRender = pieces[i];
-      while(orientation>pieceToRender.points.length) { // Orientation peut aller de 1 à 4 mais certaines pieces n'ont que 2 orientation (rails droits), voir 1 seule (croix)
+      while (orientation > pieceToRender.points.length) { // orientation can go from 1 to 4 but some tracks have only 2 orientations (straigth tracks), and even only 1  (cross track)
         orientation--; // = Math.round(orientation/pieceToRender.points.length);
       }
       pointsToRenderTab = pieceToRender.points[orientation-1].drawPoints;
       drawPoints(ctx,x,y,pointsToRenderTab,"Black",true);
-      
+
       pathsToRenderTab = pieceToRender.points[orientation-1].paths;
       drawNewPath(ctx,x,y,pathsToRenderTab);
 
@@ -203,7 +203,7 @@ function renderPiece(ctx,x,y,name,orientation) {
       mouseX = ev.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
       mouseY = ev.clientY + document.body.scrollTop + document.documentElement.scrollTop;
     }
-    //At this point, we have x and y coordinates that are relative to the document (that is, the entire HTML page). That’s not quite useful yet. We want coordinates relative to the canvas.
+    //At this point, we have x and y coordinates that are relative to the document (that is, the entire HTML page). Thatâ€™s not quite useful yet. We want coordinates relative to the canvas.
     mouseX -= canvas.offsetLeft;
     mouseY -= canvas.offsetTop;
     return {
@@ -213,8 +213,8 @@ function renderPiece(ctx,x,y,name,orientation) {
   }
 
 function ev_mouseup(ev) {
-  
-  if (drag) { return; } // Si on est en train de "transporter" une piece alors on n'est pas en train de faire une selection pour une fusion
+
+  if (drag) { return; } // We are dragging a track, thus we are not currently selecting (several) tracks for a merge
   mousePos = getMousePosition(ev);
   console.log("MOUSE UP AT x = "+mousePos.x+" Y = "+mousePos.y);
   selecting = false; // Fin du mode selection
@@ -223,7 +223,7 @@ function ev_mouseup(ev) {
 
 function ev_mousedown(ev) {
 
-  if (drag) { return; } // Si on est en train de "transporter" une piece alors on n'est pas en train de faire une selection pour une fusion
+  if (drag) { return; }  // We are dragging a track, thus we are not currently selecting (several) tracks for a merge
   mousePos = getMousePosition(ev);
   console.log("MOUSE DOWN AT x = "+mousePos.x+" Y = "+mousePos.y);
   startSelectingX = mousePos.x;
@@ -235,9 +235,9 @@ function ev_mousedown(ev) {
 function inArea(x,y,area) {
   return (x>area[0] && x<area[2] && y>area[1] && y<area[3]);
 }
- 
+
 function ev_mousemove(ev) {
-  
+
   mousePos = getMousePosition(ev);
 
   drawArrowUp = inArea(mousePos.x,mousePos.y,moveUpArea);
@@ -245,13 +245,13 @@ function ev_mousemove(ev) {
   drawArrowLeft = inArea(mousePos.x,mousePos.y,moveLeftArea);
   drawArrowRight = inArea(mousePos.x,mousePos.y,moveRightArea);
 
-  
+
   Today = new Date;
   start  =Today.getTime();
 
   n=1;
   for (var i=0; i<n; i++) {
-    redrawForeground(); 
+    redrawForeground();
   }
 
   Today = new Date;
@@ -269,7 +269,7 @@ function ev_mousemove(ev) {
 function exportMap() {
   xml = '';
   xml = xml + '<?xml version="1.0" encoding="UTF-8"?>'+'\n';
-  xml = xml + '<layout>'+'\n';  
+  xml = xml + '<layout>'+'\n';
   for (var j=0; j<map.length; j++) {
     xml = xml + '  <piece>'+'\n';
     xml = xml + '    <name>'+map[j][2]+'</name>'+'\n';
@@ -283,7 +283,7 @@ function exportMap() {
 }
 
 function ev_mouseclick(ev) {
-  
+
   movemap = false;
 
   if (inArea(mousePos.x,mousePos.y,moveUpArea)) { globaldy++; movemap=true; };
@@ -296,15 +296,15 @@ function ev_mouseclick(ev) {
     return;
   }
 
-  if (drag) { // Cas "depot d'une piece"
+  if (drag) { // case "drop of a piece"
     map.push(new Array(Math.round(mousePos.x/ur)-globaldx,Math.round(mousePos.y/ur)-globaldy,pieces[indexPieces].name,dragOrientation));
     if (!infinite) { drag = false; }
     redrawMap();
     redrawForeground();
-  } else if (Math.abs(startSelectingX-mousePos.x)>5 || Math.abs(startSelectingY-mousePos.y)>5) {  // Cas "fin de selection"
-    // Si la distance parcourue depuis l'event mouse down est "grande", c'est que l'on a fait un rect de sélection, et donc qu'on ne cherche pas à prendre une pièce
+  } else if (Math.abs(startSelectingX-mousePos.x)>5 || Math.abs(startSelectingY-mousePos.y)>5) {  // case "end of selecting"
+    // if distance from muse down event is "big", that mean we have drawn a selecting rectangle, thus we are not trying to pull a piece out of the layout
 
-    // Parcourir map à la recherche de toutes les pièces incluses dans le rectangle de selection de la fusion
+    // Looking for all pieces included in the selecting rectangle
     var maxX = Math.max(mousePos.x,startSelectingX);
     var minX = Math.min(mousePos.x,startSelectingX);
     var maxY = Math.max(mousePos.y,startSelectingY);
@@ -315,19 +315,19 @@ function ev_mouseclick(ev) {
         mapX = map[j][0];
         mapY = map[j][1];
         if (inArea((mapX+globaldx)*ur,(mapY+globaldy)*ur,[minX,minY,maxX,maxY])) {
-          console.log("piece selectionnée => ");
+          console.log("piece selectionnÃ©e => ");
           console.log(map[j]);
           piecesAfusionner.push(map[j]);
         }
     }
     console.log(piecesAfusionner);
-    // Ya plus qu'à fusionner les pièces qui sont dans le tableau 'piecesAfusionner', sachant que pieceAfusionner[i] = [x,y,name,orientation]
+    // Now, we can merge all pieces that have been found. They are in the array 'piecesAfusionner', knowing that pieceAfusionner[i] = [x,y,name,orientation]
     fusionne(piecesAfusionner);
-    
+
     return;
-  } else { // Cas prise éventuelle d'une pièce
-  
-    // Parcourir map à la recherche de la pièce la plus proche de mousePos.x, mousePos.y
+  } else { // case : take a piece (eventually) out of the layout
+
+    // Find the nearest piece from mousePos.x, mousePos.y
     posX = Math.round(mousePos.x/ur)-globaldx;
     posY = Math.round(mousePos.y/ur)-globaldy;
     distMin = 99999;
@@ -353,9 +353,9 @@ function ev_mouseclick(ev) {
 }
 
 function MouseWheelHandler(e) {
-	// cross-browser wheel delta
-	var e = window.event || e; // old IE support
-	var delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
+  // cross-browser wheel delta
+  var e = window.event || e; // old IE support
+  var delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
   console.log("delta = "+delta);
   if (delta>0) {
     updateUr(1);
@@ -369,13 +369,13 @@ function updateUr(incr) {
   ur_previous = ur;
   ur+=incr;
   if (ur<ur_min) { ur = ur_min; }
-  if (ur>ur_max) { ur = ur_max; }  
+  if (ur>ur_max) { ur = ur_max; }
 
   // Now, we need to calculate a modification of globaldx and globaldy in order to "center" the map
   nbCasesx = canvas.width/ur;
   nbCasesx_old = canvas.width/ur_previous;
   globaldx -= Math.round((nbCasesx_old - nbCasesx)/2);
-   
+
   nbCasesy = canvas.height/ur;
   nbCasesy_old = canvas.height/ur_previous;
   globaldy -= Math.round((nbCasesy_old - nbCasesy)/2);
@@ -387,13 +387,13 @@ function ev_keypress(e) {
   console.log(keyCode);
 
   if (keyCode==107) { updateUr(1); redrawGrid(); redraw=true; } // +  Zoom in
-  if (keyCode==109) { updateUr(-1); redrawGrid(); redraw=true; } // - Zoom out  
+  if (keyCode==109) { updateUr(-1); redrawGrid(); redraw=true; } // - Zoom out
 
 /*
   if (keyCode==72) { globaldx++; redraw=true; } // h - go left
   if (keyCode==74) { globaldx--; redraw=true; } // j - go right
   if (keyCode==85) { globaldy++; redraw=true; } // u - go up
-  if (keyCode==78) { globaldy--; redraw=true; } // n - go down  
+  if (keyCode==78) { globaldy--; redraw=true; } // n - go down
 */
   if (keyCode==88) { exportMap(); } // 88 => X - Export map to Xml ...
 
@@ -407,110 +407,114 @@ function ev_keypress(e) {
   if (keyCode==49) { redraw = true; _loadCircuit1(); } // 1 => Circuit 1
   if (keyCode==50) { redraw = true; _loadCircuit2(); } // 2 => Circuit 2
 
-  if (keyCode==38) { redraw = true; dragOrientation++; } // UP 
+  if (keyCode==38) { redraw = true; dragOrientation++; } // UP
   if (keyCode==40) { redraw = true; dragOrientation--; } // DOWN
-  if (keyCode==37) { redraw = true; indexPieces++; dragOrientation=1; } // LEFT 
+  if (keyCode==37) { redraw = true; indexPieces++; dragOrientation=1; } // LEFT
   if (keyCode==39) { redraw = true; indexPieces--; dragOrientation=1; } // RIGHT
 
   if (keyCode==67) { redraw = true; map = new Array(); } // Clear the current layout
   if (keyCode==90) { redraw = true; map.pop(); } // Z => Undo
-  
+
   if (indexPieces>=pieces.length) indexPieces = 0;
   if (indexPieces<0) indexPieces = pieces.length-1;
-    
+
   if (dragOrientation>pieces[indexPieces].points.length) dragOrientation=1;
-  if (dragOrientation<1) dragOrientation=pieces[indexPieces].points.length;  
+  if (dragOrientation<1) dragOrientation=pieces[indexPieces].points.length;
   if (redraw) { redrawAll(); }
 }
 
 function redrawAll() {
   // we have 3 context to redraw
-  redrawGrid(); // background 
+  redrawGrid(); // background
   redrawMap(); // current layout
   redrawForeground(); // move gadget + current dragged piece
 }
 
 function redrawMap() {
 
-   mapCtx.clearRect(0, 0, canvas.width, canvas.height);
-    
+  mapCtx.clearRect(0, 0, canvas.width, canvas.height);
+
   // Draw the current layout
-   for (var j=0; j<map.length; j++) {
-     renderPiece(mapCtx,(map[j][0]+globaldx)*ur,(map[j][1]+globaldy)*ur,map[j][2],map[j][3]);
-   }
+  for (var j=0; j<map.length; j++) {
+   renderPiece(mapCtx,(map[j][0]+globaldx)*ur,(map[j][1]+globaldy)*ur,map[j][2],map[j][3]);
+  }
 }
 
 function redrawForeground() {
 
-   // Dans cette fonction il faudrait effacer uniquement le rectangle concerné par l'emplacement précédent de la piece.
-   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  // We may clear a smaller area.. the one concerned by piece's old position
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-   // Draw the piece that is under the mouse pointer 
-   if (drag && typeof(mousePos)!='undefined') {
-     renderPiece(ctx,Math.round(mousePos.x/ur)*ur,Math.round(mousePos.y/ur)*ur,pieces[indexPieces].name,dragOrientation);
-   }
+  // Draw the piece that is under the mouse pointer
+  if (drag && typeof(mousePos)!='undefined') {
+   renderPiece(ctx,Math.round(mousePos.x/ur)*ur,Math.round(mousePos.y/ur)*ur,pieces[indexPieces].name,dragOrientation);
+  }
 
-   var l = Math.max(canvas.width*0.02,canvas.height*0.02);
-   var w = 20;
-   
-   if (drawArrowUp) {
-      ctx.fillStyle = "DarkGrey";
-    } else {
-      ctx.fillStyle = "LightGrey";
-    }
-      
-      // Arrow up
-      ctx.beginPath();
-      ctx.moveTo(canvas.width/2 - l, w);
-      ctx.lineTo(canvas.width/2, 0);
-      ctx.lineTo(canvas.width/2 + l, w);
-      ctx.fill();
+  var l = Math.max(canvas.width*0.02,canvas.height*0.02);
+  var w = 20;
 
-    if (drawArrowDown) {
-      ctx.fillStyle = "DarkGrey";
-    } else {
-      ctx.fillStyle = "LightGrey";
-    }
-      // Arrow down
-      ctx.beginPath();
-      ctx.moveTo(canvas.width/2 - l, canvas.height-w);
-      ctx.lineTo(canvas.width/2, canvas.height);
-      ctx.lineTo(canvas.width/2 + l, canvas.height-w);
-      ctx.fill();
+  // Arrow up
 
-  
-    if (drawArrowLeft) {
-      ctx.fillStyle = "DarkGrey";
-    } else {
-      ctx.fillStyle = "LightGrey";
-    }
+  if (drawArrowUp) {
+    ctx.fillStyle = "DarkGrey";
+  } else {
+    ctx.fillStyle = "LightGrey";
+  }
 
-      // Arrow left
-      ctx.beginPath();
-      ctx.moveTo(w, canvas.height/2 - l);
-      ctx.lineTo(0, canvas.height/2);
-      ctx.lineTo(w, canvas.height/2 + l);
-      ctx.fill();
-  
-    if (drawArrowRight) {
-      ctx.fillStyle = "DarkGrey";
-    } else {
-      ctx.fillStyle = "LightGrey";
-    }
+  ctx.beginPath();
+  ctx.moveTo(canvas.width/2 - l, w);
+  ctx.lineTo(canvas.width/2, 0);
+  ctx.lineTo(canvas.width/2 + l, w);
+  ctx.fill();
 
-      // Arrow right
-      ctx.beginPath();
-      ctx.moveTo(canvas.width-w, canvas.height/2 - l);
-      ctx.lineTo(canvas.width, canvas.height/2);
-      ctx.lineTo(canvas.width-w, canvas.height/2 + l);
-      ctx.fill();
+  // Arrow down
+
+  if (drawArrowDown) {
+    ctx.fillStyle = "DarkGrey";
+  } else {
+    ctx.fillStyle = "LightGrey";
+  }
+
+  ctx.beginPath();
+  ctx.moveTo(canvas.width/2 - l, canvas.height-w);
+  ctx.lineTo(canvas.width/2, canvas.height);
+  ctx.lineTo(canvas.width/2 + l, canvas.height-w);
+  ctx.fill();
+
+  // Arrow left
+
+  if (drawArrowLeft) {
+    ctx.fillStyle = "DarkGrey";
+  } else {
+    ctx.fillStyle = "LightGrey";
+  }
+
+  ctx.beginPath();
+  ctx.moveTo(w, canvas.height/2 - l);
+  ctx.lineTo(0, canvas.height/2);
+  ctx.lineTo(w, canvas.height/2 + l);
+  ctx.fill();
+
+  // Arrow right
+
+  if (drawArrowRight) {
+    ctx.fillStyle = "DarkGrey";
+  } else {
+    ctx.fillStyle = "LightGrey";
+  }
+
+  ctx.beginPath();
+  ctx.moveTo(canvas.width-w, canvas.height/2 - l);
+  ctx.lineTo(canvas.width, canvas.height/2);
+  ctx.lineTo(canvas.width-w, canvas.height/2 + l);
+  ctx.fill();
 
 }
 
 function loadPieceData(nodeElem) {
     var childElem;
 
-    // Traitement des éléments enfants 
+    // Processing element's children
     for (var i=0; i<nodeElem.childNodes.length; i++) {
       childElem = nodeElem.childNodes[i];
       if (childElem.nodeType==1) { // 1 = ELEMENT_NODE
@@ -551,7 +555,7 @@ function _loadCircuit(filename) {
     for (var i=0; i<xmlDoc.documentElement.childNodes.length; i++) {
       nodeElem = xmlDoc.documentElement.childNodes[i];
       if (nodeElem.nodeType==Node.ELEMENT_NODE) {
-        //console.log(xmlDoc.documentElement.childNodes[i].nodeName); 
+        //console.log(xmlDoc.documentElement.childNodes[i].nodeName);
         if (nodeElem.nodeName=='piece') {
            map.push(loadPieceData(nodeElem));
         }
@@ -562,7 +566,7 @@ function _loadCircuit(filename) {
 function _loadCircuit0() {
   _loadCircuit("geotrax_layout0.xml");
 }
-    
+
 function _loadCircuit1() {
   _loadCircuit("geotrax_layout1.xml");
 }
@@ -572,7 +576,7 @@ function _loadCircuit2() {
     map = new Array();
     map.push(new Array(28,6,"RAIL_DROIT",H));
     map.push(new Array(36,10,"LONG_CURVE",NE));
-    map.push(new Array(20,10,"LONG_CURVE",NO));    
+    map.push(new Array(20,10,"LONG_CURVE",NO));
 
     map.push(new Array(9,20,"CURVE",NO));
     map.push(new Array(16,18,"CROSSING",1));
@@ -581,7 +585,7 @@ function _loadCircuit2() {
     map.push(new Array(34,18,"RAIL_DROIT",H));
     map.push(new Array(40,18,"CROSSING",1));
     map.push(new Array(47,20,"CURVE",NE));
-    
+
     map.push(new Array(7,27,"RAIL_DROIT",V));
     map.push(new Array(7,33,"RAIL_DROIT",V));
     map.push(new Array(11,41,"LONG_CURVE",SO));
@@ -614,8 +618,8 @@ function _showGrid(show) {
     ctx.strokeStyle = "LightGrey";
     max  = Math.max(canvas.width,canvas.height);
     for (var i=0; i<(max/ur); i++) {
-      ctx.moveTo(i*ur,0);  ctx.lineTo(i*ur,canvas.height); // Ligne V
-      ctx.moveTo(0,i*ur);  ctx.lineTo(canvas.width,i*ur); // Ligne H
+      ctx.moveTo(i*ur,0);  ctx.lineTo(i*ur,canvas.height); // Vertical line
+      ctx.moveTo(0,i*ur);  ctx.lineTo(canvas.width,i*ur); // Horizontal line
     }
     ctx.stroke();
   }
@@ -643,16 +647,16 @@ function calculateRailCourbe(arg) {
   tab = new Array();
 
   var rayonInt = 5*u;
-  var rayonExt = 7*u;  
+  var rayonExt = 7*u;
 
   if (arg=="long") {
     name = "LONG_CURVE";
     rayonInt = 8*u;
-    rayonExt = 10*u;  
+    rayonExt = 10*u;
   } else if (arg=="short") {
     name = "SHORT_CURVE";
     rayonInt = 2*u;
-    rayonExt = 4*u;  
+    rayonExt = 4*u;
   }
 
 
@@ -671,17 +675,17 @@ function calculateRailCroix() {
 
   name = "CROSSING";
 
-  shortTrackH = _calculateRailDroitCourt(Math.PI/2); // rail droit court horizontal
-  shortTrackV = _calculateRailDroitCourt(0); // rail droit court vertical
-  
+  shortTrackH = _calculateRailDroitCourt(Math.PI/2); // horizontal short straight track
+  shortTrackV = _calculateRailDroitCourt(0); // vertical short straight track
+
   current = fusionne2Pieces(shortTrackH,shortTrackV,2,2);
   current = fusionne2Pieces(current,shortTrackH,3,0);
   current = fusionne2Pieces(current,shortTrackV,2,-1);
-    
+
   var polys = current.drawPoints;
   var addedPaths = current.paths;
-  
-  // Translation du point de reference
+
+  // Translating reference point (ie try to center the piece around coord 0,0)
   var dec = maxmin(addedPaths);
   for (var i=0; i<polys.length; i++) {
     translation(polys[i],dec.dx,dec.dy);
@@ -701,15 +705,15 @@ function calculateRailAiguillageD() {
 
   name = "AIGUILLAGE_D";
 
-  courbe = _calculateRailCourbe(5*u,7*u,0);
-  shortTrack = _calculateRailDroitCourt(0); // rail droit court vertical
-  
+  courbe = _calculateRailCourbe(5*u,7*u,0); // curved track
+  shortTrack = _calculateRailDroitCourt(0); // vertical short straight track
+
   current = fusionne2Pieces(courbe,shortTrack,2,-2);
   current = fusionne2Pieces(current,shortTrack,2,1);
-    
+
   var polys = current.drawPoints;
   var addedPaths = current.paths;
-  
+
   var orient1 = makeOrientation(polys,addedPaths,Math.PI*(3/2));
   var orient2 = makeOrientation(polys,addedPaths,0);
   var orient3 = makeOrientation(polys,addedPaths,Math.PI/2);
@@ -727,15 +731,15 @@ function calculateRailAiguillageG() {
   name = "AIGUILLAGE_G";
   tab = new Array();
 
-  courbe = _calculateRailCourbe(5*u,7*u,0);
-  shortTrack = _calculateRailDroitCourt(Math.PI/2); // rail droit court vertical
-  
+  courbe = _calculateRailCourbe(5*u,7*u,0); // curved track
+  shortTrack = _calculateRailDroitCourt(Math.PI/2); // vertical short straight track
+
   current = fusionne2Pieces(courbe,shortTrack,0,2);
   current = fusionne2Pieces(current,shortTrack,-3,2);
-    
+
   var polys = current.drawPoints;
   var addedPaths = current.paths;
-  
+
   var orient1 = makeOrientation(polys,addedPaths,Math.PI*(3/2));
   var orient2 = makeOrientation(polys,addedPaths,0);
   var orient3 = makeOrientation(polys,addedPaths,Math.PI/2);
@@ -745,7 +749,7 @@ function calculateRailAiguillageG() {
     name: name,
     points: [orient1, orient2, orient3, orient4]
   }
-    
+
 }
 
 function calculateRailAiguillageT() {
@@ -754,19 +758,19 @@ function calculateRailAiguillageT() {
   tab = new Array();
 
   courbe1 = _calculateRailCourbe(5*u,7*u,0);
-  courbe2 = _calculateRailCourbe(5*u,7*u,Math.PI/2);
-  shortTrack = _calculateRailDroitCourt(Math.PI/2); // rail droit court vertical
-    
+  courbe2 = _calculateRailCourbe(5*u,7*u,Math.PI/2); // curved track
+  shortTrack = _calculateRailDroitCourt(Math.PI/2); // vertical short straight track
+
   current = fusionne2Pieces(courbe1,courbe2,4,0);
   current = fusionne2Pieces(current,shortTrack,-3,2);
   current = fusionne2Pieces(current,shortTrack,0,2);
   current = fusionne2Pieces(current,shortTrack,3,2);
   current = fusionne2Pieces(current,shortTrack,6,2);
-    
+
   var polys = current.drawPoints;
   var addedPaths = current.paths;
-  
-  // Translation du point de reference
+
+  // Translating reference point (ie try to center the piece around coord 0,0)
   dx = -2; dy = -2;
   for (var i=0; i<polys.length; i++) {
     translation(polys[i],dx,dy);
@@ -823,14 +827,14 @@ function calculateRailSlice_Switch() {
 
   obj1 = _calculateRailSlice(0,false,false);
   obj2 = _calculateRailDroitCourt(Math.PI/2);
-  
+
   current = fusionne2Pieces(obj1,obj2,2,1);
   current = fusionne2Pieces(current,obj2,-4,1);
   current = fusionne2Pieces(current,obj2,-1,1);
-    
+
   var polys = current.drawPoints;
   var addedPaths = current.paths;
-  
+
   var orient1 = makeOrientation(polys,addedPaths,0);
   var orient2 = makeOrientation(polys,addedPaths,Math.PI/2);
   var orient3 = makeOrientation(polys,addedPaths,Math.PI);
@@ -850,14 +854,14 @@ function calculateRailSliceR_Switch() {
 
   obj1 = _calculateRailSlice(0,true,false);
   obj2 = _calculateRailDroitCourt(Math.PI/2);
-  
+
   current = fusionne2Pieces(obj1,obj2,2,1);
   current = fusionne2Pieces(current,obj2,-4,1);
   current = fusionne2Pieces(current,obj2,-1,1);
-    
+
   var polys = current.drawPoints;
   var addedPaths = current.paths;
-  
+
   var orient1 = makeOrientation(polys,addedPaths,0);
   var orient2 = makeOrientation(polys,addedPaths,Math.PI/2);
   var orient3 = makeOrientation(polys,addedPaths,Math.PI);
@@ -875,23 +879,23 @@ function calculateRailDroit() {
 
   name = "RAIL_DROIT";
 
-  shortTrackH = _calculateRailDroitCourt(Math.PI/2); // rail droit court horizontal
-  
+  shortTrackH = _calculateRailDroitCourt(Math.PI/2); // horizontal short straight track
+
   current = fusionne2Pieces(shortTrackH,shortTrackH,3,0);
-    
+
   var polys = current.drawPoints;
   var addedPaths = current.paths;
-  
+
   // Translation du point de reference
   var dec = maxmin(addedPaths);
   for (var i=0; i<polys.length; i++) {
     translation(polys[i],dec.dx,dec.dy);
   }
   translation(addedPaths,dec.dx,dec.dy);
-  
+
   var orient1 = makeOrientation(polys,addedPaths,0);
   var orient2 = makeOrientation(polys,addedPaths,Math.PI/2);
-  
+
   return {
     name: name,
     points: [orient1, orient2]
@@ -916,7 +920,7 @@ function calculateRailDroitCourt() {
 function _calculateRailDroitCourt(angle) {
 
   var points = new Array();
-  
+
   points.push(new Array(-u,-2*u));
   points.push(new Array(u,-2*u));
   points.push(new Array(u,-u));
@@ -925,8 +929,8 @@ function _calculateRailDroitCourt(angle) {
   points.push(new Array(-u,1*u));
   points.push(new Array(-u,0));
   points.push(new Array(-u,-u));
-  points.push(new Array(-u,-2*u));   // Et retour au premier point
-  
+  points.push(new Array(-u,-2*u));   // Back to the first point
+
   rotation(points,angle);
 
   var pointsPath = new Array();
@@ -936,7 +940,7 @@ function _calculateRailDroitCourt(angle) {
   }
   rotation(pointsPath,angle);
   arrondi(pointsPath);
-  
+
   return {
     drawPoints : new Array(points),
     paths : pointsPath
@@ -948,7 +952,7 @@ function _calculateRailDroitCourt(angle) {
   The piece is calculated by union of two others ("Rail Slice" + "Rail Slice reverse")
     _    _       _ _
   _/   +  \_  =  _X_
-  
+
   union of polygons is done using the clipper library (clipper.js)
 */
 
@@ -963,7 +967,7 @@ function calculateRailXSwitch() {
 
   var polys = current.drawPoints;
   var addedPaths = current.paths;
-  
+
   var orient1 = makeOrientation(polys,addedPaths,0);
   var orient2 = makeOrientation(polys,addedPaths,Math.PI/2);
 
@@ -975,32 +979,32 @@ function calculateRailXSwitch() {
 }
 
 function  fusionne(piecesAfusionner) {
-  // ok on va fusionner les 2 premieres pieces du tableau piecesAfusionner
+  // we will merge the 2 first pieces from array 'piecesAfusionner'
   console.log(" ------------");
   console.log(piecesAfusionner);
   if (piecesAfusionner.length==0) return; // protection
 
-  // 1. current = derniere piece a fusionner
+  // 1. current = last piece to merge
   var lastPieceOnMap = piecesAfusionner[piecesAfusionner.length-1];
   var current = pieces[findPieceIndexByName(lastPieceOnMap[2])].points[lastPieceOnMap[3]-1];
 
-  // 2. Ensuite boucle pour fusionner dernier piece du tableau avec current
+  // 2. Loop to merge the last entry of the array with the current element
   for (var i=piecesAfusionner.length-1; i>0; i--) {
     var pieceOnMap1 = piecesAfusionner[i-1];
     var pieceOnMap2 = piecesAfusionner[i];
-    // 1. On calcul le deltax et deltay de la 2e par rapport à la 1ere
+    // 1. Compute deltax and deltay from 2nd element de la 2e compared to the 1st
     var dx = pieceOnMap2[0]-pieceOnMap1[0];
     var dy = pieceOnMap2[1]-pieceOnMap1[1];
-    // Find the piece by name (given by pieceOnMapx[2]) in the list of available piece, and then get the correct piece orientation (given by pieceOnMapx[3]) 
+    // Find the piece by name (given by pieceOnMapx[2]) in the list of available piece, and then get the correct piece orientation (given by pieceOnMapx[3])
     var piece = pieces[findPieceIndexByName(pieceOnMap1[2])].points[pieceOnMap1[3]-1];
     current = fusionne2Pieces(piece,current,dx,dy); // To do for all pieces... current = (current + piece)
   }
-  
+
   // 'current' is the result of (piece1 + piece2 + .... + pieceN)
   var polys = current.drawPoints;
   var addedPaths = current.paths;
-    
-  // Translation du point de reference
+
+  // Translating reference point (ie try to center the piece around coord 0,0)
   var dec = maxmin(addedPaths);
   for (var i=0; i<polys.length; i++) {
     translation(polys[i],dec.dx,dec.dy);
@@ -1012,15 +1016,15 @@ function  fusionne(piecesAfusionner) {
   var orient2 = makeOrientation(polys,addedPaths,Math.PI/2);
   var orient3 = makeOrientation(polys,addedPaths,Math.PI);
   var orient4 = makeOrientation(polys,addedPaths,Math.PI*1.5);
-  
+
   var newPiece = {
-    name: "YOUFOU"+Math.floor((Math.random()*1000)+1), // Il faudra "creer" un nom
+    name: "YOUFOU"+Math.floor((Math.random()*1000)+1), // Generate a random name for the new piece
     points: [orient1, orient2, orient3, orient4]
   }
-  
+
   //console.log(newPiece);
-  pieces.push(newPiece); // Ajout au tableau general des type de pieces existantes !!!!!
-  
+  pieces.push(newPiece); // Add to global array of existing tracks !!!!!
+
   // Remove pieces ....
   for (var i=0; i<piecesAfusionner.length; i++) {
       var pieceToDeleteIndex = -1
@@ -1036,11 +1040,11 @@ function  fusionne(piecesAfusionner) {
         map.splice(pieceToDeleteIndex,1);
       }
   }
-  
+
   // ... and replace by the new piece (that is the union of all selected pieces)
   map.push([piecesAfusionner[0][0]-dec.dx,piecesAfusionner[0][1]-dec.dy,newPiece.name,1]);
-  
-  // Redraw 
+
+  // Redraw
   redrawMap();
 
 }
@@ -1048,12 +1052,12 @@ function  fusionne(piecesAfusionner) {
 function fusionne2Pieces(piece1,piece2,dx,dy) {
 
   var pts1 = arrayCopy(piece1.drawPoints);
-  var pts2 = arrayCopy(piece2.drawPoints); //   /!\ drawPoints est un tableau de tableau de points, c'est à dire ça peut etre plusieurs formes
+  var pts2 = arrayCopy(piece2.drawPoints); //   /!\ drawPoints is an array of array of points, i.e it can be several shapes
   // Translate piece2 by dx and dy (so that reference point is at the same point)
   for (var i=0; i<pts2.length; i++) {
     translation(pts2[i],dx,dy);
   }
-  
+
   // Ok, now with have to make the union of shape piece1 (piece1.drawPoints) with shape piece2 (piece2.drawPoints)
   subj_polygons = scale(geotrain2clipper(pts1),100);
   clip_polygons = scale(geotrain2clipper(pts2),100);
@@ -1063,11 +1067,11 @@ function fusionne2Pieces(piece1,piece2,dx,dy) {
   cpr.AddPolygons(clip_polygons, ClipperLib.PolyType.ptClip);
 
   // Available clip type are : ctUnion, ctIntersection, ctXor, ctDifference
-  clipType = ClipperLib.ClipType.ctUnion; 
-  
+  clipType = ClipperLib.ClipType.ctUnion;
+
   subject_fillType = ClipperLib.PolyFillType.pftNonZero;
   clip_fillType = ClipperLib.PolyFillType.pftNonZero;
-  
+
   solution_polygons = [[]];
   succeeded = cpr.Execute(clipType, solution_polygons, subject_fillType, clip_fillType);
 
@@ -1078,10 +1082,10 @@ function fusionne2Pieces(piece1,piece2,dx,dy) {
   for (var i=0; i<polys.length; i++) {
     polys[i].push(arrayCopy(polys[i][0])); // Last point must be a copy of the first point (if we don't make a copy, it is a reference to the same object which caused a bug when translating ..)
   }
-  
+
   // don't forget to also "add" the path from piece1 (piece1.path) and piece2 (piece2.path)
   var paths1 = arrayCopy(piece1.paths);
-  var paths2 = arrayCopy(piece2.paths); 
+  var paths2 = arrayCopy(piece2.paths);
   // All paths from piece2 must also be translated by dx and dy
   translation(paths2,dx,dy);
 
@@ -1094,10 +1098,10 @@ function fusionne2Pieces(piece1,piece2,dx,dy) {
     drawPoints : polys,
     paths : addedPaths
   }
-  
+
 }
 
-// Addition des segments de paths
+// Adding path's segments
 function arrayMerge(finalTab,tab) {
   for (var i=0; i<tab.length; i++) {
     var found = false;
@@ -1109,7 +1113,7 @@ function arrayMerge(finalTab,tab) {
         found = true;
       }
     }
-    // Si pas trouvé de segment identique, on ajoute le segment courant du path 'tab'
+    // If we couldn't find identical segment, we simply add the current segment
     if (!found) {
       finalTab.push(tab[i]);
     }
@@ -1125,13 +1129,13 @@ function maxmin(paths) {
     for (var j=0; j< paths.length; j++) { // For each segment in the current path...
       var seg = paths[j];
 
-      // 1er point du segment
+      // 1st point of segment
       if (seg[0]<minX) { minX = seg[0] } // lowest x coord is found !
       if (seg[0]>maxX) { maxX = seg[0] } // highest x coord is found !
       if (seg[1]<minY) { minY = seg[1] } // lowest y coord is found !
       if (seg[1]>maxY) { maxY = seg[1] } // highest y coord is found !
 
-      // 2e point du segment
+      // 2nd point of segment
       if (seg[2]<minX) { minX = seg[2] } // lowest x coord is found !
       if (seg[2]>maxX) { maxX = seg[2] } // highest x coord is found !
       if (seg[3]<minY) { minY = seg[3] } // lowest y coord is found !
@@ -1142,11 +1146,11 @@ function maxmin(paths) {
     dx: -Math.round((maxX+minX)/2/u),
     dy: -Math.round((maxY+minY)/2/u)
   }
-}  
+}
 
 function makeOrientation(polys,path,angle) {
   var newPolys = arrayCopy(polys);
-  var newPath = arrayCopy(path);  
+  var newPath = arrayCopy(path);
   if (angle!=0) {
     for (var i=0; i<newPolys.length; i++) {
       rotation(newPolys[i],angle);
@@ -1155,20 +1159,20 @@ function makeOrientation(polys,path,angle) {
   }
   return {
     drawPoints : newPolys,
-    paths : newPath 
+    paths : newPath
   }
 }
 
 function _calculateRailSlice(angle,_reverse,_aiguillage) {
 
-  // Calcul des points 
+  // Compute points
   var points = new Array();
   var pointsPath = new Array();
-  
+
   var radiusInt = 7*u;
   var radiusExt = 7.5*u;
 
-    
+
   for (var i=-(Math.PI/2); i<=0; i=i+(Math.PI/2)/20) {
      xi = -4.5*u+Math.cos(i)*radiusExt;
      yi = 5*u+Math.sin(i)*radiusExt;
@@ -1177,7 +1181,7 @@ function _calculateRailSlice(angle,_reverse,_aiguillage) {
      }
   }
 
- 
+
   for (var i=Math.PI; i>=Math.PI/2; i=i-(Math.PI/2)/20) {
      xi = 4.5*u+Math.cos(i)*radiusExt;
      yi = -7*u+Math.sin(i)*radiusExt;
@@ -1185,8 +1189,8 @@ function _calculateRailSlice(angle,_reverse,_aiguillage) {
       points.push(new Array(xi,yi));
      }
   }
-  
-        
+
+
     var N = points.length;
 
     // Avec la partie droite
@@ -1199,8 +1203,8 @@ function _calculateRailSlice(angle,_reverse,_aiguillage) {
         pointsPath.push(new Array(i*u,1.5*u,(i-1)*u,1.5*u));
       }
     }
-    
-    for (var i=N-1; i>=0; i--) { // Recopie de la courbe supérieure mais plus bas et parcouru dans le sens inverse.
+
+    for (var i=N-1; i>=0; i--) { // Copy the upper curve but lower and in reversed order.
       yi = points[i][1]+2*u;
       xi = points[i][0];
       if (_aiguillage) {
@@ -1217,25 +1221,25 @@ function _calculateRailSlice(angle,_reverse,_aiguillage) {
       y_old = yi;
     }
 
-  // Recalcul path du milieu
+  // Re-compute middle path
   for (var i = N-1; i>0; i--) {
     pointsPath.push(new Array(points[i][0],points[i][1]+u,points[i-1][0],points[i-1][1]+u));
   }
   //...
-  
-  if (_reverse) {    
+
+  if (_reverse) {
     reverse(points);
     reverse(pointsPath);
   }
-  
-// Translation pour modifier la position du point de reference  
+
+  // Translating reference point (ie try to center the piece around coord 0,0)
   translation(points,-0.5,-0.5);
   translation(pointsPath,-0.5,-0.5);
 
-// Rotation des points
-  rotation(points,angle); 
-  rotation(pointsPath,angle);  
-  
+  // Rotate points
+  rotation(points,angle);
+  rotation(pointsPath,angle);
+
   return {
     drawPoints : new Array(points),
     paths : pointsPath
@@ -1245,12 +1249,12 @@ function _calculateRailSlice(angle,_reverse,_aiguillage) {
 
 function _calculateRailCourbe(radiusInt,radiusExt,angle) {
 
-  // Calcul des points 
+  // Compute points
   var points = new Array();
 
   points.push(new Array(0,radiusInt));
   points.push(new Array(0,radiusExt));
-    
+
   for (var i=(Math.PI/2); i>=0; i=i-(Math.PI/2)/15) {
      xi = Math.cos(i)*radiusExt;
      yi = Math.sin(i)*radiusExt;
@@ -1267,7 +1271,7 @@ function _calculateRailCourbe(radiusInt,radiusExt,angle) {
 
   translation(points,-Math.round((radiusExt/u)/2),-Math.round((radiusExt/u)/2));
   rotation(points,angle);
-  
+
   // Path
   var pointsPath = new Array();
   var radiusInter = radiusInt+(radiusExt-radiusInt)/2;
@@ -1283,15 +1287,15 @@ function _calculateRailCourbe(radiusInt,radiusExt,angle) {
      pointsPath.push(new Array(x1,y1,x2,y2));
   }
 
-// Translation pour modifier la position du point de reference  
+  // Translating reference point (ie try to center the piece around coord 0,0)
   translation(pointsPath,-Math.round((radiusExt/u)/2),-Math.round((radiusExt/u)/2));
 
-// Rotation des points 
+  // Rotate points
   rotation(pointsPath,angle);
 
   arrondi(points);
   arrondi(pointsPath);
-  
+
   return {
     drawPoints : new Array(points),
     paths : pointsPath
@@ -1301,32 +1305,32 @@ function _calculateRailCourbe(radiusInt,radiusExt,angle) {
 // Toolbox : function to draw a shape on canvas from an array of array of points (x,y)
 function drawPoints(ctx,x,y,pointsTab,color, isPoly) {
 
-  // Remplissage intérieur (coloriage)
+  // Filling interior of the shape (coloring)
   if (usePaint && color!="Red") {
-    ctx.beginPath();  
+    ctx.beginPath();
     ctx.fillStyle = "rgb(224,194,102)";
     for (var j=0; j<pointsTab.length; j++) {
       points = pointsTab[j];
       ctx.moveTo(x+(points[0][0]*(ur/u)),y+(points[0][1]*(ur/u)));
-      // Affichage en reliant les points ...
+      // Draw by connecting points ...
       for (var i=1; i<points.length; i++) {
         ctx.lineTo(x+(points[i][0]*(ur/u)),y+(points[i][1]*(ur/u)));
       }
     }
-    ctx.fill();  
+    ctx.fill();
   }
 
-  // Contour
-  ctx.beginPath();  
+  // Shape
+  ctx.beginPath();
   ctx.strokeStyle = color;
   for (var j=0; j<pointsTab.length; j++) {
     points = pointsTab[j];
     ctx.moveTo(x+(points[0][0]*(ur/u)),y+(points[0][1]*(ur/u)));
-    // Affichage en reliant les points ...
+    // Draw by connecting points ...
     for (var i=1; i<points.length; i++) {
       ctx.lineTo(x+(points[i][0]*(ur/u)),y+(points[i][1]*(ur/u)));
     }
-    if (isPoly) { // Si on dessine un polygone, alors on ferme le contour (relie le dernier point au premier)
+    if (isPoly) { // If we draw a polygon, we close the shape (connect last point to first point)
      ctx.closePath();
     }
   }
@@ -1342,7 +1346,7 @@ function drawRefPoint(ctx,x,y) {
   }
 }
 
-// Les path c'est un tableau de segment (segment = tableau de 4 points x0,y0,x1,y1);
+// Paths are an array of segments (segment = array of 4 points x0,y0,x1,y1);
 function drawNewPath(ctx,x,y,points) {
 
   var r = 2;
@@ -1350,18 +1354,18 @@ function drawNewPath(ctx,x,y,points) {
     return;
   }
 
-  // Pts extreme des segments en bleu
+  // Start and end of segment are drawn in blue
   for (var j=0; j<points.length; j++) {
       ctx.beginPath();
       ctx.fillStyle = "Blue";
       ctx.arc(x+(points[j][0]*(ur/u)),y+(points[j][1]*(ur/u)),r,0,2*Math.PI,true);
       ctx.fill();
-      ctx.arc(x+(points[j][2]*(ur/u)),y+(points[j][3]*(ur/u)),r,0,2*Math.PI,true);      
+      ctx.arc(x+(points[j][2]*(ur/u)),y+(points[j][3]*(ur/u)),r,0,2*Math.PI,true);
       ctx.fill();
   }
-  
-  // Contour
-  ctx.beginPath();  
+
+  // Lines
+  ctx.beginPath();
   ctx.strokeStyle = "red";
   for (var j=0; j<points.length; j++) {
     segment = points[j];
@@ -1383,14 +1387,14 @@ function arrayCopy(tab) {
   return newTab;
 }
 
-// Translation de segments (x0,y0,x1,y1)
+// Translate segments (x0,y0,x1,y1)
 function translation(points,dx,dy) {
-  // Translation pour modifier la position du point de reference  
+  // Translating reference point (ie try to center the piece around coord 0,0)
   for (var i=0; i<points.length; i++) {
-    // 1er point du segment [x1,y1,..,..] ou point seul [x,y]
+    // 1st point of segment [x1,y1,..,..] or first and only point [x,y]
     points[i][0] = points[i][0]+dx*u;
     points[i][1] = points[i][1]+dy*u;
-    // 2e point du segment [..,..,x2,y2]
+    // 2nd point of segment [..,..,x2,y2]
     if (points[i].length==4) {
       points[i][2] = points[i][2]+dx*u;
       points[i][3] = points[i][3]+dy*u;
@@ -1399,12 +1403,12 @@ function translation(points,dx,dy) {
 }
 
 function reverse(points) {
-  // Symétrie par rapport à la verticale  
+  // vertical symmetry
   for (var i=0; i<points.length; i++) {
-    // 1er point du segment [x1,y1,..,..] ou point seul [x,y]
+    // 1st point of segment [x1,y1,..,..] or first and only point [x,y]
     points[i][0] = - points[i][0];
     points[i][1] = points[i][1];
-    // 2e point du segment [..,..,x2,y2]
+    // 2nd point of segment [..,..,x2,y2]
     if (points[i].length==4) {
       points[i][2] = - points[i][2];
       points[i][3] = points[i][3];
@@ -1413,14 +1417,14 @@ function reverse(points) {
 }
 
 function rotation(points,angle) {
-// Rotation des points 
+// Rotation of points
   for (var i=0; i<points.length; i++) {
-    // 1er point du segment [x1,y1,..,..] ou point seul [x,y]
+    // 1st point of segment [x1,y1,..,..] or first and only point [x,y]
     xr = points[i][0];
     yr = points[i][1];
     points[i][0] = xr*Math.cos(angle)-yr*Math.sin(angle);
     points[i][1] = xr*Math.sin(angle)+yr*Math.cos(angle);
-    // 2e point du segment [..,..,x2,y2]
+    // 2nd point of segment [..,..,x2,y2]
     if (points[i].length==4) {
       xr = points[i][2];
       yr = points[i][3];
@@ -1431,7 +1435,7 @@ function rotation(points,angle) {
 }
 
 function arrondi(tab) {
-  // Arrondi 
+  // Rounding
   for (var i=0; i<tab.length; i++) {
     if (tab[i] instanceof Array) {
       arrondi(tab[i]);
@@ -1445,7 +1449,7 @@ function arrondi(tab) {
 // A polygone is an array of array of points (array of 2 int)
 // ex: [[[x1,y1],[x2,y2]]]  with 1 sub poly
 function geotrain2clipper(polys) {
-  var subj_polygons = []; 
+  var subj_polygons = [];
   for (var i=0; i<polys.length; i++) {
     subj_polygons[i] = [];
     for (var j=0; j<polys[i].length; j++) {
@@ -1456,7 +1460,7 @@ function geotrain2clipper(polys) {
 }
 
 function clipper2geotrain(poly) {
-  var subj_polygons = []; 
+  var subj_polygons = [];
   for (var i=0; i<poly.length; i++) {
     subj_polygons[i] = [];
     for (var j=0; j<poly[i].length; j++) {
@@ -1491,14 +1495,11 @@ function reverseTab(points) {
 
 
 function loadXMLDoc(dname) {
-  if (window.XMLHttpRequest)
-    {
+  if (window.XMLHttpRequest) {
     xhttp=new XMLHttpRequest();
-    }
-  else
-    {
+  } else {
     xhttp=new ActiveXObject("Microsoft.XMLHTTP");
-    }
+  }
   xhttp.open("GET",dname,false);
   xhttp.send();
   return xhttp.responseXML;
