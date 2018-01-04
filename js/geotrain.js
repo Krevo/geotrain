@@ -1352,11 +1352,65 @@ function drawNewPath(ctx,x,y,points) {
   }
 
   // Start and end of segment are drawn in blue
+/*
+  var ptStart = points[0];
+  var ptEnd = points[points.length-1];
+
+  ctx.beginPath();
+  ctx.fillStyle = "Blue";
+  // First point of first segment
+  ctx.arc(x+(ptStart[0]*(ur/u)),y+(ptStart[1]*(ur/u)),r,0,2*Math.PI,true);
+  ctx.fill();
+  // Last point of last segment
+  ctx.arc(x+(ptEnd[2]*(ur/u)),y+(ptEnd[3]*(ur/u)),r,0,2*Math.PI,true);
+  ctx.fill();
+*/
+  // Exploring path to find start/end point (ie points belonging to only 1 segment)
+  console.log("----path---");
+  var obj = {};
+  for (var j=0; j<points.length; j++) {
+    console.log(points[j]);
+    var key = points[j][0]+"-"+points[j][1];
+    console.log(key);
+    if (!!obj[key]) {
+      obj[key] = obj[key] + 1;
+    } else {
+      obj[key] = 1;
+    }
+    var key2 = points[j][2]+"-"+points[j][3];
+    console.log(key2);
+    if (!!obj[key2]) {
+      obj[key2] = obj[key2] + 1;
+    } else {
+      obj[key2] = 1;
+    }
+  }
+ console.log(obj);
+
+  // points[j] is a segment (== [x1, y1, x2, y2])
   for (var j=0; j<points.length; j++) {
       ctx.beginPath();
-      ctx.fillStyle = "Blue";
+      var key = points[j][0]+"-"+points[j][1];
+      if (obj[key]==1) {
+        ctx.fillStyle = "Green";
+        r = 3;
+      } else {
+        ctx.fillStyle = "Blue";
+        r = 2;
+      }
       ctx.arc(x+(points[j][0]*(ur/u)),y+(points[j][1]*(ur/u)),r,0,2*Math.PI,true);
       ctx.fill();
+      ctx.closePath();
+
+      ctx.beginPath();
+      var key2 = points[j][2]+"-"+points[j][3];
+      if (obj[key2]==1) {
+        ctx.fillStyle = "Green";
+        r = 3;
+      } else {
+        ctx.fillStyle = "Blue";
+        r =2;
+      }
       ctx.arc(x+(points[j][2]*(ur/u)),y+(points[j][3]*(ur/u)),r,0,2*Math.PI,true);
       ctx.fill();
   }
