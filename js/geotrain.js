@@ -65,16 +65,17 @@ var drag = true;
 var infinite = true;
 var dragOrientation = 1;
 var indexPieces = 0;
+var moveIntervalId = -1;
 
 var moveUpArea;
 var moveDownArea;
 var moveLeftArea;
 var moveRightArea;
 
-var drawArrowUp = false;
-var drawArrowDown = false;
-var drawArrowLeft = false;
-var drawArrowRight = false;
+var isInMoveUpArea = false;
+var isInMoveDownArea = false;
+var isInMoveLeftArea = false;
+var isInMoveRightArea = false;
 
 var pieces = new Array();
 
@@ -227,10 +228,21 @@ function ev_mousemove(ev) {
 
   mousePos = getMousePosition(ev);
 
-  drawArrowUp = inArea(mousePos.x,mousePos.y,moveUpArea);
-  drawArrowDown = inArea(mousePos.x,mousePos.y,moveDownArea);
-  drawArrowLeft = inArea(mousePos.x,mousePos.y,moveLeftArea);
-  drawArrowRight = inArea(mousePos.x,mousePos.y,moveRightArea);
+  isInMoveUpArea = inArea(mousePos.x,mousePos.y,moveUpArea);
+  isInMoveDownArea = inArea(mousePos.x,mousePos.y,moveDownArea);
+  isInMoveLeftArea = inArea(mousePos.x,mousePos.y,moveLeftArea);
+  isInMoveRightArea = inArea(mousePos.x,mousePos.y,moveRightArea);
+
+  if (isInMoveUpArea || isInMoveDownArea || isInMoveLeftArea || isInMoveRightArea) {
+    if (moveIntervalId<=0) {
+      moveIntervalId = setInterval(moveMap, 100);
+    }
+  } else {
+    if (moveIntervalId > 0) {
+      clearInterval(moveIntervalId)
+    };
+    moveIntervalId = -1;
+  }
 
   redrawForeground();
 
@@ -257,19 +269,18 @@ function exportMap() {
   console.log(xml);
 }
 
+function moveMap() {
+
+  if (isInMoveUpArea)    { globaldy++; };
+  if (isInMoveDownArea)  { globaldy--; };
+  if (isInMoveLeftArea)  { globaldx++; };
+  if (isInMoveRightArea) { globaldx--; };
+
+  redrawMap();
+  return;
+}
+
 function ev_mouseclick(ev) {
-
-  movemap = false;
-
-  if (inArea(mousePos.x,mousePos.y,moveUpArea)) { globaldy++; movemap=true; };
-  if (inArea(mousePos.x,mousePos.y,moveDownArea)) { globaldy--; movemap=true; };
-  if (inArea(mousePos.x,mousePos.y,moveLeftArea)) { globaldx++; movemap=true; };
-  if (inArea(mousePos.x,mousePos.y,moveRightArea)) { globaldx--; movemap=true; };
-
-  if (movemap) {
-    redrawMap();
-    return;
-  }
 
   if (drag) { // case "drop of a piece"
     map.push(new Array(Math.round(mousePos.x/ur)-globaldx,Math.round(mousePos.y/ur)-globaldy,pieces[indexPieces].name,dragOrientation));
@@ -430,7 +441,7 @@ function redrawForeground() {
 
   // Arrow up
 
-  if (drawArrowUp) {
+  if (isInMoveUpArea) {
     ctx.fillStyle = "DarkGrey";
   } else {
     ctx.fillStyle = "LightGrey";
@@ -444,7 +455,7 @@ function redrawForeground() {
 
   // Arrow down
 
-  if (drawArrowDown) {
+  if (isInMoveDownArea) {
     ctx.fillStyle = "DarkGrey";
   } else {
     ctx.fillStyle = "LightGrey";
@@ -458,7 +469,7 @@ function redrawForeground() {
 
   // Arrow left
 
-  if (drawArrowLeft) {
+  if (isInMoveLeftArea) {
     ctx.fillStyle = "DarkGrey";
   } else {
     ctx.fillStyle = "LightGrey";
@@ -472,7 +483,7 @@ function redrawForeground() {
 
   // Arrow right
 
-  if (drawArrowRight) {
+  if (isInMoveRightArea) {
     ctx.fillStyle = "DarkGrey";
   } else {
     ctx.fillStyle = "LightGrey";
