@@ -1251,7 +1251,6 @@ function _calculateRailCourbe(radiusInt,radiusExt,angle) {
   var pointsPath = new Array();
   var radiusInter = radiusInt+(radiusExt-radiusInt)/2;
 
-  pointsPath.push(new Array(radiusInter,0));
   for (var i=0; i<8; i++) {
      j = i * (Math.PI/2)/8;
      k = (i+1) * (Math.PI/2)/8;
