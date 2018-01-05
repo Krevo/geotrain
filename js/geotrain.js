@@ -95,6 +95,7 @@ var map = new Array();
   // I want to follow start and end of selecting pieces, for a merge
   canvas.addEventListener("mousedown", ev_mousedown, false);
   canvas.addEventListener("mouseup", ev_mouseup, false);
+  canvas.addEventListener("mouseout", ev_mouseout, false);
 
   // IE9, Chrome, Safari, Opera
   canvas.addEventListener("mousewheel", MouseWheelHandler, false);
@@ -224,6 +225,25 @@ function inArea(x,y,area) {
   return (x>area[0] && x<area[2] && y>area[1] && y<area[3]);
 }
 
+function startMoving() {
+  if (moveIntervalId<=0) {
+    moveIntervalId = setInterval(moveMap, 100);
+  }
+}
+
+function stopMoving() {
+  if (moveIntervalId > 0) {
+    clearInterval(moveIntervalId)
+  };
+  moveIntervalId = -1;
+}
+
+// Mouse is out of the canvas
+function ev_mouseout(ev) {
+  stopMoving(); // If currently moving the map we stop !
+}
+
+
 function ev_mousemove(ev) {
 
   mousePos = getMousePosition(ev);
@@ -234,14 +254,9 @@ function ev_mousemove(ev) {
   isInMoveRightArea = inArea(mousePos.x,mousePos.y,moveRightArea);
 
   if (isInMoveUpArea || isInMoveDownArea || isInMoveLeftArea || isInMoveRightArea) {
-    if (moveIntervalId<=0) {
-      moveIntervalId = setInterval(moveMap, 100);
-    }
+    startMoving();
   } else {
-    if (moveIntervalId > 0) {
-      clearInterval(moveIntervalId)
-    };
-    moveIntervalId = -1;
+    stopMoving();
   }
 
   redrawForeground();
