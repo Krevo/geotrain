@@ -526,6 +526,7 @@ function _loadCircuit(filename) {
 
     map = new Array();
     var xmlDoc = loadXMLDoc(filename);
+    if (!xmlDoc) return;
     var nodeElem;
     for (var i=0; i<xmlDoc.documentElement.childNodes.length; i++) {
       nodeElem = xmlDoc.documentElement.childNodes[i];
@@ -1475,6 +1476,13 @@ function loadXMLDoc(dname) {
     xhttp=new ActiveXObject("Microsoft.XMLHTTP");
   }
   xhttp.open("GET",dname,false);
-  xhttp.send();
+  try {
+    xhttp.send();
+  } catch (e) {
+    if (window.console) { // for IE !
+      console.error("Could not load layout "+dname);
+    }
+    return null;
+  }
   return xhttp.responseXML;
 }
