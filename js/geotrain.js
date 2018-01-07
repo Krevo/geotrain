@@ -50,9 +50,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  var globaldx = 0;
  var globaldy = 0;
 
-var mousePos;
+ // This variable is used to move the tracks up and down
+ var commanddy = 0;
+
+ // Those variables are used to move the grid according to the mouse movement.
+ var mousePos;
+ var mousePos1;
 
 var selecting = false; // Flag for currently selecting pieces for merge
+var spacebar = false; // Flag if spacebar is pressed or not
 
 var showRefPoint = false;
 var showPath = false;
@@ -71,10 +77,16 @@ var moveDownArea;
 var moveLeftArea;
 var moveRightArea;
 
+var moveUpCommandArea;
+var moveDownCommandArea;
+
 var drawArrowUp = false;
 var drawArrowDown = false;
 var drawArrowLeft = false;
 var drawArrowRight = false;
+
+var drawArrowCommandUp = false;
+var drawArrowCommandDown = false;
 
 var pieces = new Array();
 
@@ -82,15 +94,15 @@ var map = new Array();
 
  function init() {
 
-  canvas = document.getElementById("geocanvasfg");
-  bgcanvas = document.getElementById("geocanvasbg");
-  mapcanvas = document.getElementById("geocanvas");
+  canvas = document.getElementById("geolayouteditorfg");
+  bgcanvas = document.getElementById("geolayouteditorbg");
+  mapcanvas = document.getElementById("geolayouteditor");
 
-  commandPanel = document.getElementById("geocommand");
+  tracklist = document.getElementById("geotracklist");
 
   // type of event : mouseup, mousemove, mousedown, click,
   canvas.addEventListener("mousemove", ev_mousemove, false);
-
+  canvas.addEventListener("mouseover", ev_hover, false);
   // I want to follow start and end of selecting pieces, for a merge
   canvas.addEventListener("mousedown", ev_mousedown, false);
   canvas.addEventListener("mouseup", ev_mouseup, false);
@@ -103,8 +115,28 @@ var map = new Array();
   canvas.addEventListener("click", ev_mouseclick, false);
   if (window.addEventListener){
     window.addEventListener("keydown", ev_keypress, false);
+    window.addEventListener("keyup", ev_keyrelease, false);
   } else if (window.attachEvent){ // IE sucks !
     window.attachEvent("keydown", ev_keypress, false);
+    window.attachEvent("keyup", ev_keyrelease, false);
+  }
+
+  tracklist = document.getElementById("geotracklist");
+
+  // type of event : mouseup, mousemove, mousedown, click,
+  tracklist.addEventListener("mousemove", cmd_mousemove, false);
+  tracklist.addEventListener("mouseover", cmd_hover, false);
+  // I want to follow start and end of selecting pieces, for a merge
+  tracklist.addEventListener("mousedown", cmd_mousedown, false);
+  tracklist.addEventListener("mouseup", cmd_mouseup, false);
+
+  tracklist.addEventListener("click", cmd_mouseclick, false);
+  if (window.addEventListener){
+    window.addEventListener("keydown", cmd_keypress, false);
+    window.addEventListener("keyup", cmd_keyrelease, false);
+  } else if (window.attachEvent){ // IE sucks !
+    window.attachEvent("keydown", cmd_keypress, false);
+    window.attachEvent("keyup", cmd_keyrelease, false);
   }
 
   ctx = canvas.getContext("2d");
@@ -120,10 +152,10 @@ var map = new Array();
   mapCtx.canvas.width  = window.innerWidth * 0.8;
   mapCtx.canvas.height = window.innerHeight * 0.87;
 
-  panel = commandPanel.getContext("2d");
+  trackpanel = tracklist.getContext("2d");
 
-  panel.canvas.width  = window.innerWidth * 0.1;
-  panel.canvas.height = window.innerHeight * 0.87;
+  trackpanel.canvas.width  = window.innerWidth * 0.1;
+  trackpanel.canvas.height = window.innerHeight * 0.87;
 
   pieces.push(calculateRailCourbe("short"));
   pieces.push(calculateRailCourbe());
@@ -147,6 +179,9 @@ var map = new Array();
   moveDownArea = [0,canvas.height-w,canvas.width,canvas.height];
   moveLeftArea = [0,0,w,canvas.height];
   moveRightArea = [canvas.width-w,0,canvas.width,canvas.height];
+
+  moveUpCommandArea = [0,0,tracklist.width,w];
+  moveDownCommandArea = [0,tracklist.height-w,tracklist.width,tracklist.height];
 
   _loadCircuit1();
   redrawAll();
@@ -180,7 +215,21 @@ function renderPiece(ctx,x,y,name,orientation) {
    }
 }
 
+function MouseWheelHandler(e) {
+  // cross-browser wheel delta
+  var e = window.event || e; // old IE support
+  var delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
+  console.log("delta = "+delta);
+  if (delta>0) {
+    updateUr(1);
+  } else {
+    updateUr(-1);
+  }
+  redrawAll();
+}
+
   function getMousePosition(ev) {
+
     var mouseX;
     var mouseY;
     if (ev.pageX || ev.pageY) {
@@ -191,8 +240,8 @@ function renderPiece(ctx,x,y,name,orientation) {
       mouseY = ev.clientY + document.body.scrollTop + document.documentElement.scrollTop;
     }
     //At this point, we have x and y coordinates that are relative to the document (that is, the entire HTML page). That’s not quite useful yet. We want coordinates relative to the canvas.
-    mouseX -= canvas.offsetLeft;
-    mouseY -= canvas.offsetTop;
+    mouseX -= ev.path[0].offsetLeft;
+    mouseY -= ev.path[0].offsetTop;
     return {
       x : mouseX,
       y : mouseY
@@ -218,43 +267,57 @@ function ev_mousedown(ev) {
   selecting = true; // We are now on mode "cirrently selecting"
 }
 
-// An area is defined by area[0],area[1] (upper left point) and area[2],area[3] (lower right point)
-function inArea(x,y,area) {
-  return (x>area[0] && x<area[2] && y>area[1] && y<area[3]);
-}
-
 function ev_mousemove(ev) {
 
-  mousePos = getMousePosition(ev);
+    mousePos = getMousePosition(ev);
 
-  drawArrowUp = inArea(mousePos.x,mousePos.y,moveUpArea);
-  drawArrowDown = inArea(mousePos.x,mousePos.y,moveDownArea);
-  drawArrowLeft = inArea(mousePos.x,mousePos.y,moveLeftArea);
-  drawArrowRight = inArea(mousePos.x,mousePos.y,moveRightArea);
+  if(spacebar == false) {
 
-  redrawForeground();
+    drawArrowUp = inArea(mousePos.x,mousePos.y,moveUpArea);
+    drawArrowDown = inArea(mousePos.x,mousePos.y,moveDownArea);
+    drawArrowLeft = inArea(mousePos.x,mousePos.y,moveLeftArea);
+    drawArrowRight = inArea(mousePos.x,mousePos.y,moveRightArea);
 
-  if (selecting) {
-    ctx.strokeStyle = "Red";
-    ctx.strokeRect(startSelectingX,startSelectingY,mousePos.x-startSelectingX,mousePos.y-startSelectingY);
+    redrawForeground();
+
+    if (selecting) {
+      ctx.strokeStyle = "Red";
+      ctx.strokeRect(startSelectingX,startSelectingY,mousePos.x-startSelectingX,mousePos.y-startSelectingY);
+    }
+  } else {
+
+    mousePos = getMousePosition(ev);
+    setTimeout(function(){ mousePos1 = getMousePosition(ev); }, 30);
+
+    var xmovement = mousePos.x - mousePos1.x;
+    var ymovement = mousePos.y - mousePos1.y;
+
+    movemap = false;
+
+    globaldx = globaldx + xmovement/10; movemap=true; 
+    globaldy = globaldy + ymovement/10; movemap=true;
+
+    if (movemap) {
+      redrawMap();
+      return;
+    }
+
   }
-
 }
 
-function exportMap() {
-  xml = '';
-  xml = xml + '<?xml version="1.0" encoding="UTF-8"?>'+'\n';
-  xml = xml + '<layout>'+'\n';
-  for (var j=0; j<map.length; j++) {
-    xml = xml + '  <piece>'+'\n';
-    xml = xml + '    <name>'+map[j][2]+'</name>'+'\n';
-    xml = xml + '    <x>'+map[j][0]+'</x>'+'\n';
-    xml = xml + '    <y>'+map[j][1]+'</y>'+'\n';
-    xml = xml + '    <orientation>'+map[j][3]+'</orientation>'+'\n';
-    xml = xml + '  </piece>'+'\n';
-  }
-  xml = xml + "</layout>"+'\n';
-  console.log(xml);
+function ev_mousedown(ev) {
+
+  if (drag) { return; }  // We are dragging a track, thus we are not currently selecting (several) tracks for a merge
+  mousePos = getMousePosition(ev);
+  console.log("MOUSE DOWN AT x = "+mousePos.x+" Y = "+mousePos.y);
+  startSelectingX = mousePos.x;
+  startSelectingY = mousePos.y;
+  selecting = true; // We are now on mode "cirrently selecting"
+}
+
+function ev_hover(ev) {
+
+	console.log("ev mouse over");
 }
 
 function ev_mouseclick(ev) {
@@ -327,39 +390,12 @@ function ev_mouseclick(ev) {
 
 }
 
-function MouseWheelHandler(e) {
-  // cross-browser wheel delta
-  var e = window.event || e; // old IE support
-  var delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
-  console.log("delta = "+delta);
-  if (delta>0) {
-    updateUr(1);
-  } else {
-    updateUr(-1);
-  }
-  redrawAll();
-}
-
-function updateUr(incr) {
-  ur_previous = ur;
-  ur+=incr;
-  if (ur<ur_min) { ur = ur_min; }
-  if (ur>ur_max) { ur = ur_max; }
-
-  // Now, we need to calculate a modification of globaldx and globaldy in order to "center" the map
-  nbCasesx = canvas.width/ur;
-  nbCasesx_old = canvas.width/ur_previous;
-  globaldx -= Math.round((nbCasesx_old - nbCasesx)/2);
-
-  nbCasesy = canvas.height/ur;
-  nbCasesy_old = canvas.height/ur_previous;
-  globaldy -= Math.round((nbCasesy_old - nbCasesy)/2);
-}
-
 function ev_keypress(e) {
   var redraw = false;
   keyCode = e.keyCode
   console.log(keyCode);
+
+  if (keyCode==32) { spacebar = true; redraw = true; drag = false; infinite = drag;} // h - go left
 
   if (keyCode==107) { updateUr(1); redrawGrid(); redraw=true; } // +  Zoom in
   if (keyCode==109) { updateUr(-1); redrawGrid(); redraw=true; } // - Zoom out
@@ -398,11 +434,125 @@ function ev_keypress(e) {
   if (redraw) { redrawAll(); }
 }
 
+function ev_keyrelease(e) {
+  var redraw = false;
+  keyCode = e.keyCode
+  console.log(keyCode);
+
+  if (keyCode==32) { spacebar = false; redraw = true; drag = true; infinite = drag;} // h - go left
+
+}
+
+// An area is defined by area[0],area[1] (upper left point) and area[2],area[3] (lower right point)
+function inArea(x,y,area) {
+  return (x>area[0] && x<area[2] && y>area[1] && y<area[3]);
+}
+
+function cmd_mouseup(ev) {
+	console.log("cmd mouse up");
+}
+
+function cmd_mousedown(ev) {
+	console.log("cmd mouse down");
+}
+
+function cmd_mousemove(ev) {
+  
+  mousePos = getMousePosition(ev);
+  
+    if(spacebar == false) {
+  
+      drawArrowCommandUp = inArea(mousePos.x,mousePos.y,moveUpCommandArea);
+      drawArrowCommandDown = inArea(mousePos.x,mousePos.y,moveDownCommandArea);
+    
+    } else {
+  
+      mousePos = getMousePosition(ev);
+      setTimeout(function(){ mousePos1 = getMousePosition(ev); }, 30);
+  
+      var xmovement = mousePos.x - mousePos1.x;
+      var ymovement = mousePos.y - mousePos1.y;
+  
+      movemap = false;
+  
+      commanddy = commanddy + ymovement/10; movemap=true;
+  
+      if (movemap) {
+        redrawTracklist();
+        return;
+      }
+  
+    }
+
+}
+
+function cmd_hover(ev) {
+
+	console.log("cmd mouse over");
+}
+
+function cmd_mouseclick(ev) {
+
+  mousePos = getMousePosition(ev);
+  movecommand = false;
+
+  if (inArea(mousePos.x,mousePos.y,moveUpCommandArea)) { commanddy++; movecommand=true; console.log("move up"); };
+  if (inArea(mousePos.x,mousePos.y,moveDownCommandArea)) { commanddy--; movecommand=true; console.log("move down"); };
+
+  if (movecommand) {
+    redrawTracklist();
+    return;
+  }
+
+}
+
+function cmd_keypress(e) {
+	console.log("cmd key pressed");
+}
+
+function cmd_keyrelease(e) {
+	console.log("cmd key released");
+}
+
+function exportMap() {
+  xml = '';
+  xml = xml + '<?xml version="1.0" encoding="UTF-8"?>'+'\n';
+  xml = xml + '<layout>'+'\n';
+  for (var j=0; j<map.length; j++) {
+    xml = xml + '  <piece>'+'\n';
+    xml = xml + '    <name>'+map[j][2]+'</name>'+'\n';
+    xml = xml + '    <x>'+map[j][0]+'</x>'+'\n';
+    xml = xml + '    <y>'+map[j][1]+'</y>'+'\n';
+    xml = xml + '    <orientation>'+map[j][3]+'</orientation>'+'\n';
+    xml = xml + '  </piece>'+'\n';
+  }
+  xml = xml + "</layout>"+'\n';
+  console.log(xml);
+}
+
+
+function updateUr(incr) {
+  ur_previous = ur;
+  ur+=incr;
+  if (ur<ur_min) { ur = ur_min; }
+  if (ur>ur_max) { ur = ur_max; }
+
+  // Now, we need to calculate a modification of globaldx and globaldy in order to "center" the map
+  nbCasesx = canvas.width/ur;
+  nbCasesx_old = canvas.width/ur_previous;
+  globaldx -= Math.round((nbCasesx_old - nbCasesx)/2);
+
+  nbCasesy = canvas.height/ur;
+  nbCasesy_old = canvas.height/ur_previous;
+  globaldy -= Math.round((nbCasesy_old - nbCasesy)/2);
+}
+
 function redrawAll() {
   // we have 3 context to redraw
   redrawGrid(); // background
   redrawMap(); // current layout
   redrawForeground(); // move gadget + current dragged piece
+  redrawTracklist(); // move gadget + current dragged piece
 }
 
 function redrawMap() {
@@ -486,6 +636,46 @@ function redrawForeground() {
 
 }
 
+function redrawTracklist() {
+  
+  trackpanel.clearRect(0, 0, tracklist.width, tracklist.height);
+
+// Arrow up
+
+  if (drawArrowCommandUp) {
+    trackpanel.fillStyle = "DarkGrey";
+  } else {
+    trackpanel.fillStyle = "LightGrey";
+  }
+  trackpanel.beginPath();
+  trackpanel.moveTo(tracklist.width/2 - l, w);
+  trackpanel.lineTo(tracklist.width/2, 0);
+  trackpanel.lineTo(tracklist.width/2 + l, w);
+  trackpanel.fill();
+
+  // Arrow down
+  if (drawArrowCommandDown) {
+    trackpanel.fillStyle = "DarkGrey";
+  } else {
+    trackpanel.fillStyle = "LightGrey";
+  }
+  trackpanel.beginPath();
+  trackpanel.moveTo(tracklist.width/2 - l, tracklist.height-w);
+  trackpanel.lineTo(tracklist.width/2, tracklist.height);
+  trackpanel.lineTo(tracklist.width/2 + l, tracklist.height-w);
+  trackpanel.fill();
+
+  trackpanel.beginPath();
+  trackpanel.strokeStyle = "LightGrey";
+  max  = Math.max(tracklist.width,tracklist.height);
+  for (var i=0; i<(max/ur); i++) {
+    trackpanel.moveTo(i*ur,0);  trackpanel.lineTo(i*ur,canvas.height); // Vertical line
+    trackpanel.moveTo(0,i*ur);  trackpanel.lineTo(canvas.width,i*ur); // Horizontal line
+  }
+  trackpanel.stroke();
+
+}
+
 function loadPieceData(nodeElem) {
     var childElem;
 
@@ -540,11 +730,11 @@ function _loadCircuit(filename) {
 }
 
 function _loadCircuit0() {
-  _loadCircuit("geotrax_layout0.xml");
+  _loadCircuit("./layouts/geotrax_layout0.xml");
 }
 
 function _loadCircuit1() {
-  _loadCircuit("geotrax_layout1.xml");
+  _loadCircuit("./layouts/geotrax_layout1.xml");
 }
 
 function _loadCircuit2() {
