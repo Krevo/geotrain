@@ -176,8 +176,8 @@ function renderPiece(ctx,x,y,name,orientation) {
       drawPoints(ctx,x,y,pointsToRenderTab,"Black");
 
       pathsToRenderTab = pieceToRender.points[orientation-1].paths;
-      drawNewPath(ctx,x,y,pathsToRenderTab);
 
+      drawNewPath(ctx,x,y,pieceToRender.points[orientation-1]);
       drawRefPoint(ctx,x,y);
    }
 }
@@ -1098,6 +1098,48 @@ function fusionne2Pieces(piece1,piece2,dx,dy) {
 
 }
 
+function isPointInsideSegment(ptX, ptY, lineStartX, lineStartY, lineEndX, lineEndY) {
+  var coefPartA = (ptY - lineStartY)  * (lineEndX - lineStartX);
+  var coefPartB = (lineEndY - lineStartY) * (ptX - lineStartX);
+
+  // Horizontal segment
+  if (lineStartY == lineEndY) {
+    if (ptY == lineStartY && ((ptX > lineStartX && ptX < lineEndX) || (ptX > lineEndX && ptX < lineStartX))) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  // Vertical segment
+  if (lineStartX == lineEndX) {
+    if (ptX == lineStartX && ((ptY > lineStartY && ptY < lineEndY) || (ptY > lineEndY && ptY < lineStartY))) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  if (coefPartA == coefPartB) return true;
+}
+
+function intersectionSegmentEtPiece(drawPoints, ptX, ptY) {
+
+  arrondi(drawPoints);
+  var pt = [ptX, ptY];
+  arrondi(pt);
+
+  for(var i =0; i<drawPoints.length; i++) {
+    for(var j = 0; j< drawPoints[i].length-1; j++) {
+      var pt1 = drawPoints[i][j];
+      var pt2 = drawPoints[i][j+1];
+      var res = isPointInsideSegment(pt[0], pt[1], pt1[0], pt1[1], pt2[0], pt2[1]);
+      if (res) return true;
+    }
+  }
+  return false;
+}
+
 // Adding path's segments
 function arrayMerge(finalTab,tab) {
   for (var i=0; i<tab.length; i++) {
@@ -1217,6 +1259,7 @@ function _calculateRailSlice(angle,_reverse,_aiguillage) {
       //pointsPath.push(new Array(xi,points[i][1]+u));
       y_old = yi;
     }
+    points.push(arrayCopy(points[0])); // Back to first point
 
   points.push(arrayCopy(points[0])); // Back to first point
 
@@ -1344,54 +1387,20 @@ function drawRefPoint(ctx,x,y) {
 }
 
 // Paths are an array of segments (segment = array of 4 points x0,y0,x1,y1);
-function drawNewPath(ctx,x,y,points) {
+function drawNewPath(ctx,x,y,piece) {
 
+  var points = piece.paths;
   var r = 2;
   if (!showPath) {
     return;
   }
 
   // Start and end of segment are drawn in blue
-/*
-  var ptStart = points[0];
-  var ptEnd = points[points.length-1];
-
-  ctx.beginPath();
-  ctx.fillStyle = "Blue";
-  // First point of first segment
-  ctx.arc(x+(ptStart[0]*(ur/u)),y+(ptStart[1]*(ur/u)),r,0,2*Math.PI,true);
-  ctx.fill();
-  // Last point of last segment
-  ctx.arc(x+(ptEnd[2]*(ur/u)),y+(ptEnd[3]*(ur/u)),r,0,2*Math.PI,true);
-  ctx.fill();
-*/
-  // Exploring path to find start/end point (ie points belonging to only 1 segment)
-  console.log("----path---");
-  var obj = {};
-  for (var j=0; j<points.length; j++) {
-    console.log(points[j]);
-    var key = points[j][0]+"-"+points[j][1];
-    console.log(key);
-    if (!!obj[key]) {
-      obj[key] = obj[key] + 1;
-    } else {
-      obj[key] = 1;
-    }
-    var key2 = points[j][2]+"-"+points[j][3];
-    console.log(key2);
-    if (!!obj[key2]) {
-      obj[key2] = obj[key2] + 1;
-    } else {
-      obj[key2] = 1;
-    }
-  }
- console.log(obj);
-
   // points[j] is a segment (== [x1, y1, x2, y2])
   for (var j=0; j<points.length; j++) {
+
       ctx.beginPath();
-      var key = points[j][0]+"-"+points[j][1];
-      if (obj[key]==1) {
+      if (intersectionSegmentEtPiece(piece.drawPoints, points[j][0], points[j][1])) {
         ctx.fillStyle = "Green";
         r = 3;
       } else {
@@ -1403,8 +1412,7 @@ function drawNewPath(ctx,x,y,points) {
       ctx.closePath();
 
       ctx.beginPath();
-      var key2 = points[j][2]+"-"+points[j][3];
-      if (obj[key2]==1) {
+      if (intersectionSegmentEtPiece(piece.drawPoints, points[j][2], points[j][3])) {
         ctx.fillStyle = "Green";
         r = 3;
       } else {
@@ -1498,7 +1506,7 @@ function arrondi(tab) {
 
 // polys is an array of polygone
 // A polygone is an array of array of points (array of 2 int)
-// ex: [[[x1,y1],[x2,y2]]]  with 1 sub poly
+// ex: [[[x1,y1],[x2,y2]], ...]  with 1 sub poly
 function geotrain2clipper(polys) {
   var subj_polygons = [];
   for (var i=0; i<polys.length; i++) {
