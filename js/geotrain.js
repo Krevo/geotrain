@@ -173,7 +173,7 @@ function renderPiece(ctx,x,y,name,orientation) {
         orientation--; // = Math.round(orientation/pieceToRender.points.length);
       }
       pointsToRenderTab = pieceToRender.points[orientation-1].drawPoints;
-      drawPoints(ctx,x,y,pointsToRenderTab,"Black",true);
+      drawPoints(ctx,x,y,pointsToRenderTab,"Black");
 
       pathsToRenderTab = pieceToRender.points[orientation-1].paths;
       drawNewPath(ctx,x,y,pathsToRenderTab);
@@ -925,12 +925,8 @@ function _calculateRailDroitCourt(angle) {
 
   points.push(new Array(-u,-2*u));
   points.push(new Array(u,-2*u));
-  points.push(new Array(u,-u));
-  points.push(new Array(u,0));
   points.push(new Array(u,1*u));
   points.push(new Array(-u,1*u));
-  points.push(new Array(-u,0));
-  points.push(new Array(-u,-u));
   points.push(new Array(-u,-2*u));   // Back to the first point
 
   rotation(points,angle);
@@ -1223,6 +1219,8 @@ function _calculateRailSlice(angle,_reverse,_aiguillage) {
       y_old = yi;
     }
 
+  points.push(arrayCopy(points[0])); // Back to first point
+
   // Re-compute middle path
   for (var i = N-1; i>0; i--) {
     pointsPath.push(new Array(points[i][0],points[i][1]+u,points[i-1][0],points[i-1][1]+u));
@@ -1304,9 +1302,10 @@ function _calculateRailCourbe(radiusInt,radiusExt,angle) {
 }
 
 // Toolbox : function to draw a shape on canvas from an array of array of points (x,y)
-function drawPoints(ctx,x,y,pointsTab,color, isPoly) {
+function drawPoints(ctx, x, y, pointsTab, color) {
 
   // Filling interior of the shape (coloring)
+  console.log(pointsTab);
   if (usePaint && color!="Red") {
     ctx.beginPath();
     ctx.fillStyle = "rgb(224,194,102)";
@@ -1331,9 +1330,7 @@ function drawPoints(ctx,x,y,pointsTab,color, isPoly) {
     for (var i=1; i<points.length; i++) {
       ctx.lineTo(x+(points[i][0]*(ur/u)),y+(points[i][1]*(ur/u)));
     }
-    if (isPoly) { // If we draw a polygon, we close the shape (connect last point to first point)
-     ctx.closePath();
-    }
+   ctx.closePath();
   }
   ctx.stroke();
 }
