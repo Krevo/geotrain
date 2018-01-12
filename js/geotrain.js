@@ -1119,8 +1119,8 @@ function isPointInsideSegment(ptX, ptY, lineStartX, lineStartY, lineEndX, lineEn
       return false;
     }
   }
-
-  if (coefPartA == coefPartB) return true;
+  // Instead of testing pure equality of coefA and coefB, we need a small tolerance
+  if (Math.abs(coefPartA - coefPartB) < 0.00001) return true;
 }
 
 function intersectionSegmentEtPiece(drawPoints, ptX, ptY) {
