@@ -385,17 +385,10 @@ function updateUr(incr) {
 function ev_keypress(e) {
   var redraw = false;
   keyCode = e.keyCode
-  console.log(keyCode);
 
   if (keyCode==107) { updateUr(1); redrawGrid(); redraw=true; } // +  Zoom in
   if (keyCode==109) { updateUr(-1); redrawGrid(); redraw=true; } // - Zoom out
 
-/*
-  if (keyCode==72) { globaldx++; redraw=true; } // h - go left
-  if (keyCode==74) { globaldx--; redraw=true; } // j - go right
-  if (keyCode==85) { globaldy++; redraw=true; } // u - go up
-  if (keyCode==78) { globaldy--; redraw=true; } // n - go down
-*/
   if (keyCode==88) { exportMap(); } // 88 => X - Export map to Xml ...
 
   if (keyCode==71) { showGrid = !showGrid; redrawGrid(); } // 71 => G
