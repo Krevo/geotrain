@@ -57,6 +57,7 @@ var selecting = false; // Flag for currently selecting pieces for merge
 var showRefPoint = false;
 var showPath = false;
 var showGrid = true
+var alignOnGrid = true;
 var usePaint = false;
 var circuit = 1;
 var canvas;
@@ -298,7 +299,13 @@ function moveMap() {
 function ev_mouseclick(ev) {
 
   if (drag) { // case "drop of a piece"
-    map.push([mousePos.x/ur-globaldx, mousePos.y/ur-globaldy, pieces[indexPieces].name, dragOrientation]);
+    var x = mousePos.x/ur;
+    var y = mousePos.y/ur;
+    if (alignOnGrid) {
+      x = Math.round(x);
+      y = Math.round(y);
+    }
+    map.push([x-globaldx, y-globaldy, pieces[indexPieces].name, dragOrientation]);
     if (!infinite) { drag = false; }
     redrawMap();
     redrawForeground();
@@ -391,6 +398,7 @@ function ev_keypress(e) {
 
   if (keyCode==88) { exportMap(); } // 88 => X - Export map to Xml ...
 
+  if (keyCode==70) { alignOnGrid = !alignOnGrid; } // 70 => F
   if (keyCode==71) { showGrid = !showGrid; redrawGrid(); } // 71 => G
   if (keyCode==82) { redraw = true; showRefPoint = !showRefPoint; }   // 82 => R
   if (keyCode==80) { redraw = true; showPath = !showPath; } // 80 => P
@@ -441,7 +449,13 @@ function redrawForeground() {
 
   // Draw the piece that is under the mouse pointer
   if (drag && typeof(mousePos)!='undefined') {
-   renderPiece(ctx, mousePos.x, mousePos.y, pieces[indexPieces].name, dragOrientation);
+    var x = mousePos.x;
+    var y = mousePos.y;
+    if (alignOnGrid) {
+      x = Math.round(x / ur) * ur;
+      y = Math.round(y / ur) * ur;
+    }
+    renderPiece(ctx, x, y, pieces[indexPieces].name, dragOrientation);
   }
 
   var l = Math.max(canvas.width*0.02,canvas.height*0.02);
