@@ -305,7 +305,7 @@ function giveDecalageForMagneticAttraction(xreel, yreel, cPoints) {
 
   console.log(pieces[indexPieces].name);
   console.log(cPoints);
-  var distMin = 10;
+  var distMin = ur / 2;
   var dx = 0;
   var dy = 0;
   for (var i=0; i<map.length; i++) {
@@ -313,8 +313,8 @@ function giveDecalageForMagneticAttraction(xreel, yreel, cPoints) {
     var mapy = map[i][1];
     var mapCPoints = pieces[findPieceIndexByName(map[i][2])].points[map[i][3]-1].connectionsPoints;
     for (var k=0; k<mapCPoints.length; k++) {
-      var mx = ((mapx*ur) + mapCPoints[k][0] * (ur/u));
-      var my = ((mapy*ur) + mapCPoints[k][1] * (ur/u));
+      var mx = ((mapx+globaldx)*ur) + mapCPoints[k][0] * (ur/u);
+      var my = ((mapy+globaldy)*ur) + mapCPoints[k][1] * (ur/u);
       console.log("mx"+k+" = "+mx);
       console.log("my"+k+" = "+my);
         for (var j=0; j<cPoints.length; j++) {
@@ -322,9 +322,9 @@ function giveDecalageForMagneticAttraction(xreel, yreel, cPoints) {
           var cy = (yreel + cPoints[j][1] * (ur/u));
           console.log("x"+j+" = "+cx);
           console.log("y"+j+" = "+cy);
-          dist = Math.sqrt(Math.pow(cx-mx,2)+Math.pow(cy-my,2));
-          console.log("dist = "+dist+" (sachant que ur = "+ur+")"); // Si distance < ur, c'est que c'est proche et on peut rapprocher les pièces
-          if (dist<distMin) {
+          dist = Math.sqrt(Math.pow(cx-mx, 2)+Math.pow(cy-my, 2));
+          console.log("dist = "+dist+" (sachant que ur = "+ur+")");
+          if (dist < distMin) {
             console.log("Nouvelle distance minimale !");
             dx = mx - cx;
             dy = my - cy;
