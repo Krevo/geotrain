@@ -296,6 +296,52 @@ function moveMap() {
   return;
 }
 
+function giveDecalageForMagneticAttraction(xreel, yreel, cPoints) {
+
+  console.log("emplacement reel point central");
+  console.log("x = " + xreel);
+  console.log("y = " + yreel);
+  console.log("Du coup, on va chercher l'emplacement réel des connectionPoints de la piece à placer");
+
+  console.log(pieces[indexPieces].name);
+  console.log(cPoints);
+  var distMin = 10;
+  var dx = 0;
+  var dy = 0;
+  for (var i=0; i<map.length; i++) {
+    var mapx = map[i][0];
+    var mapy = map[i][1];
+    var mapCPoints = pieces[findPieceIndexByName(map[i][2])].points[map[i][3]-1].connectionsPoints;
+    for (var k=0; k<mapCPoints.length; k++) {
+      var mx = ((mapx*ur) + mapCPoints[k][0] * (ur/u));
+      var my = ((mapy*ur) + mapCPoints[k][1] * (ur/u));
+      console.log("mx"+k+" = "+mx);
+      console.log("my"+k+" = "+my);
+        for (var j=0; j<cPoints.length; j++) {
+          var cx = (xreel + cPoints[j][0] * (ur/u));
+          var cy = (yreel + cPoints[j][1] * (ur/u));
+          console.log("x"+j+" = "+cx);
+          console.log("y"+j+" = "+cy);
+          dist = Math.sqrt(Math.pow(cx-mx,2)+Math.pow(cy-my,2));
+          console.log("dist = "+dist+" (sachant que ur = "+ur+")"); // Si distance < ur, c'est que c'est proche et on peut rapprocher les pièces
+          if (dist<distMin) {
+            console.log("Nouvelle distance minimale !");
+            dx = mx - cx;
+            dy = my - cy;
+            console.log("Décalage dx = "+dx);
+            console.log("Décalage dy = "+dy);
+            distMin = dist;
+          }
+        }
+    }
+  }
+
+  return {
+    dx : dx,
+    dy : dy
+  }
+}
+
 function ev_mouseclick(ev) {
 
   if (drag) { // case "drop of a piece"
@@ -305,45 +351,11 @@ function ev_mouseclick(ev) {
       x = Math.round(x);
       y = Math.round(y);
     }
-    console.log("emplacement reel point central");
-    console.log("x = "+(x*ur));
-    console.log("y = "+(y*ur));
-    console.log("Du coup, on va chercher l'emplacement réel des connectionPoints de la piece à placer");
 
-    console.log(pieces[indexPieces].name);
     var cPoints = pieces[indexPieces].points[dragOrientation-1].connectionsPoints;
-    console.log(cPoints);
-    var distMin = 10;
-    var dx = 0;
-    var dy = 0;
-    for (var i=0; i<map.length; i++) {
-      var mapx = map[i][0];
-      var mapy = map[i][1];
-      var mapCPoints = pieces[findPieceIndexByName(map[i][2])].points[map[i][3]-1].connectionsPoints;
-      for (var k=0; k<mapCPoints.length; k++) {
-        var mx = ((mapx*ur) + mapCPoints[k][0] * (ur/u));
-        var my = ((mapy*ur) + mapCPoints[k][1] * (ur/u));
-        console.log("mx"+k+" = "+mx);
-        console.log("my"+k+" = "+my);
-          for (var j=0; j<cPoints.length; j++) {
-            var cx = ((x*ur) + cPoints[j][0] * (ur/u));
-            var cy = ((y*ur) + cPoints[j][1] * (ur/u));
-            console.log("x"+j+" = "+cx);
-            console.log("y"+j+" = "+cy);
-            dist = Math.sqrt(Math.pow(cx-mx,2)+Math.pow(cy-my,2));
-            console.log("dist = "+dist+" (sachant que ur = "+ur+")"); // Si distance < ur, c'est que c'est proche et on peut rapprocher les pièces
-            if (dist<distMin) {
-              console.log("Nouvelle distance minimale !");
-              dx = mx - cx;
-              dy = my - cy;
-              console.log("Décalage dx = "+dx);
-              console.log("Décalage dy = "+dy);
-              distMin = dist;
-            }
-          }
-      }
-    }
-    map.push([x-globaldx+(dx/ur), y-globaldy+(dy/ur), pieces[indexPieces].name, dragOrientation, cPoints]);
+    var d = giveDecalageForMagneticAttraction(x * ur, y * ur, cPoints);
+
+    map.push([x-globaldx+(d.dx/ur), y-globaldy+(d.dy/ur), pieces[indexPieces].name, dragOrientation, cPoints]);
     console.log(map);
     if (!infinite) { drag = false; }
     redrawMap();
@@ -494,7 +506,11 @@ function redrawForeground() {
       x = Math.round(x / ur) * ur;
       y = Math.round(y / ur) * ur;
     }
-    renderPiece(ctx, x, y, pieces[indexPieces].name, dragOrientation);
+
+    var cPoints = pieces[indexPieces].points[dragOrientation-1].connectionsPoints;
+    var d = giveDecalageForMagneticAttraction(x, y, cPoints);
+
+    renderPiece(ctx, x + d.dx, y + d.dy, pieces[indexPieces].name, dragOrientation);
   }
 
   var l = Math.max(canvas.width*0.02,canvas.height*0.02);
