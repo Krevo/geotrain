@@ -177,8 +177,8 @@ function renderPiece(ctx,x,y,name,orientation) {
       drawPoints(ctx,x,y,pointsToRenderTab,"Black");
 
       pathsToRenderTab = pieceToRender.points[orientation-1].paths;
-      drawNewPath(ctx,x,y,pathsToRenderTab);
 
+      drawNewPath(ctx,x,y,pieceToRender.points[orientation-1]);
       drawRefPoint(ctx,x,y);
    }
 }
@@ -296,6 +296,52 @@ function moveMap() {
   return;
 }
 
+function giveDecalageForMagneticAttraction(xreel, yreel, cPoints) {
+
+  console.log("emplacement reel point central");
+  console.log("x = " + xreel);
+  console.log("y = " + yreel);
+  console.log("Du coup, on va chercher l'emplacement réel des connectionPoints de la piece à placer");
+
+  console.log(pieces[indexPieces].name);
+  console.log(cPoints);
+  var distMin = ur / 2;
+  var dx = 0;
+  var dy = 0;
+  for (var i=0; i<map.length; i++) {
+    var mapx = map[i][0];
+    var mapy = map[i][1];
+    var mapCPoints = pieces[findPieceIndexByName(map[i][2])].points[map[i][3]-1].connectionsPoints;
+    for (var k=0; k<mapCPoints.length; k++) {
+      var mx = ((mapx+globaldx)*ur) + mapCPoints[k][0] * (ur/u);
+      var my = ((mapy+globaldy)*ur) + mapCPoints[k][1] * (ur/u);
+      console.log("mx"+k+" = "+mx);
+      console.log("my"+k+" = "+my);
+        for (var j=0; j<cPoints.length; j++) {
+          var cx = (xreel + cPoints[j][0] * (ur/u));
+          var cy = (yreel + cPoints[j][1] * (ur/u));
+          console.log("x"+j+" = "+cx);
+          console.log("y"+j+" = "+cy);
+          dist = Math.sqrt(Math.pow(cx-mx, 2)+Math.pow(cy-my, 2));
+          console.log("dist = "+dist+" (sachant que ur = "+ur+")");
+          if (dist < distMin) {
+            console.log("Nouvelle distance minimale !");
+            dx = mx - cx;
+            dy = my - cy;
+            console.log("Décalage dx = "+dx);
+            console.log("Décalage dy = "+dy);
+            distMin = dist;
+          }
+        }
+    }
+  }
+
+  return {
+    dx : dx,
+    dy : dy
+  }
+}
+
 function ev_mouseclick(ev) {
 
   if (drag) { // case "drop of a piece"
@@ -305,7 +351,12 @@ function ev_mouseclick(ev) {
       x = Math.round(x);
       y = Math.round(y);
     }
-    map.push([x-globaldx, y-globaldy, pieces[indexPieces].name, dragOrientation]);
+
+    var cPoints = pieces[indexPieces].points[dragOrientation-1].connectionsPoints;
+    var d = giveDecalageForMagneticAttraction(x * ur, y * ur, cPoints);
+
+    map.push([x-globaldx+(d.dx/ur), y-globaldy+(d.dy/ur), pieces[indexPieces].name, dragOrientation, cPoints]);
+    console.log(map);
     if (!infinite) { drag = false; }
     redrawMap();
     redrawForeground();
@@ -455,7 +506,11 @@ function redrawForeground() {
       x = Math.round(x / ur) * ur;
       y = Math.round(y / ur) * ur;
     }
-    renderPiece(ctx, x, y, pieces[indexPieces].name, dragOrientation);
+
+    var cPoints = pieces[indexPieces].points[dragOrientation-1].connectionsPoints;
+    var d = giveDecalageForMagneticAttraction(x, y, cPoints);
+
+    renderPiece(ctx, x + d.dx, y + d.dy, pieces[indexPieces].name, dragOrientation);
   }
 
   var l = Math.max(canvas.width*0.02,canvas.height*0.02);
@@ -693,6 +748,7 @@ function calculateRailCroix() {
 
   var polys = current.drawPoints;
   var addedPaths = current.paths;
+  var cPoints = current.connectionsPoints;
 
   // Translating reference point (ie try to center the piece around coord 0,0)
   var dec = maxmin(addedPaths);
@@ -700,8 +756,9 @@ function calculateRailCroix() {
     translation(polys[i],dec.dx,dec.dy);
   }
   translation(addedPaths,dec.dx,dec.dy);
+  translation(cPoints,dec.dx,dec.dy);
 
-  var orient1 = makeOrientation(polys,addedPaths,0);
+  var orient1 = makeOrientation(polys, addedPaths, cPoints, 0);
 
   return {
     name: name,
@@ -722,11 +779,12 @@ function calculateRailAiguillageD() {
 
   var polys = current.drawPoints;
   var addedPaths = current.paths;
+  var cPoints = current.connectionsPoints;
 
-  var orient1 = makeOrientation(polys,addedPaths,Math.PI*(3/2));
-  var orient2 = makeOrientation(polys,addedPaths,0);
-  var orient3 = makeOrientation(polys,addedPaths,Math.PI/2);
-  var orient4 = makeOrientation(polys,addedPaths,Math.PI);
+  var orient1 = makeOrientation(polys, addedPaths, cPoints, Math.PI*(3/2));
+  var orient2 = makeOrientation(polys, addedPaths, cPoints, 0);
+  var orient3 = makeOrientation(polys, addedPaths, cPoints, Math.PI/2);
+  var orient4 = makeOrientation(polys, addedPaths, cPoints, Math.PI);
 
   return {
     name: name,
@@ -748,11 +806,12 @@ function calculateRailAiguillageG() {
 
   var polys = current.drawPoints;
   var addedPaths = current.paths;
+  var cPoints = current.connectionsPoints;
 
-  var orient1 = makeOrientation(polys,addedPaths,Math.PI*(3/2));
-  var orient2 = makeOrientation(polys,addedPaths,0);
-  var orient3 = makeOrientation(polys,addedPaths,Math.PI/2);
-  var orient4 = makeOrientation(polys,addedPaths,Math.PI);
+  var orient1 = makeOrientation(polys, addedPaths, cPoints, Math.PI*(3/2));
+  var orient2 = makeOrientation(polys, addedPaths, cPoints, 0);
+  var orient3 = makeOrientation(polys, addedPaths, cPoints, Math.PI/2);
+  var orient4 = makeOrientation(polys, addedPaths, cPoints, Math.PI);
 
   return {
     name: name,
@@ -778,6 +837,7 @@ function calculateRailAiguillageT() {
 
   var polys = current.drawPoints;
   var addedPaths = current.paths;
+  var cPoints = current.connectionsPoints;
 
   // Translating reference point (ie try to center the piece around coord 0,0)
   dx = -2; dy = -2;
@@ -785,11 +845,12 @@ function calculateRailAiguillageT() {
     translation(polys[i],dx,dy);
   }
   translation(addedPaths,dx,dy);
+  translation(cPoints,dx,dy);
 
-  var orient1 = makeOrientation(polys,addedPaths,Math.PI*(3/2));
-  var orient2 = makeOrientation(polys,addedPaths,0);
-  var orient3 = makeOrientation(polys,addedPaths,Math.PI/2);
-  var orient4 = makeOrientation(polys,addedPaths,Math.PI);
+  var orient1 = makeOrientation(polys, addedPaths, cPoints, Math.PI*(3/2));
+  var orient2 = makeOrientation(polys, addedPaths, cPoints, 0);
+  var orient3 = makeOrientation(polys, addedPaths, cPoints, Math.PI/2);
+  var orient4 = makeOrientation(polys, addedPaths, cPoints, Math.PI);
 
   return {
     name: name,
@@ -843,11 +904,12 @@ function calculateRailSlice_Switch() {
 
   var polys = current.drawPoints;
   var addedPaths = current.paths;
+  var cPoints = current.connectionsPoints;
 
-  var orient1 = makeOrientation(polys,addedPaths,0);
-  var orient2 = makeOrientation(polys,addedPaths,Math.PI/2);
-  var orient3 = makeOrientation(polys,addedPaths,Math.PI);
-  var orient4 = makeOrientation(polys,addedPaths,Math.PI*(3/2));
+  var orient1 = makeOrientation(polys, addedPaths, cPoints, 0);
+  var orient2 = makeOrientation(polys, addedPaths, cPoints, Math.PI/2);
+  var orient3 = makeOrientation(polys, addedPaths, cPoints, Math.PI);
+  var orient4 = makeOrientation(polys, addedPaths, cPoints, Math.PI*(3/2));
 
 
   return {
@@ -870,12 +932,12 @@ function calculateRailSliceR_Switch() {
 
   var polys = current.drawPoints;
   var addedPaths = current.paths;
+  var cPoints = current.connectionsPoints;
 
-  var orient1 = makeOrientation(polys,addedPaths,0);
-  var orient2 = makeOrientation(polys,addedPaths,Math.PI/2);
-  var orient3 = makeOrientation(polys,addedPaths,Math.PI);
-  var orient4 = makeOrientation(polys,addedPaths,Math.PI*(3/2));
-
+  var orient1 = makeOrientation(polys, addedPaths, cPoints, 0);
+  var orient2 = makeOrientation(polys, addedPaths, cPoints, Math.PI/2);
+  var orient3 = makeOrientation(polys, addedPaths, cPoints, Math.PI);
+  var orient4 = makeOrientation(polys, addedPaths, cPoints, Math.PI*(3/2));
 
   return {
     name: name,
@@ -894,6 +956,7 @@ function calculateRailDroit() {
 
   var polys = current.drawPoints;
   var addedPaths = current.paths;
+  var cPoints = current.connectionsPoints;
 
   // Translation du point de reference
   var dec = maxmin(addedPaths);
@@ -901,13 +964,20 @@ function calculateRailDroit() {
     translation(polys[i],dec.dx,dec.dy);
   }
   translation(addedPaths,dec.dx,dec.dy);
+  translation(cPoints,dec.dx,dec.dy);
 
-  var orient1 = makeOrientation(polys,addedPaths,0);
-  var orient2 = makeOrientation(polys,addedPaths,Math.PI/2);
+  var orient1 = makeOrientation(polys,addedPaths,cPoints,0);
+  var orient2 = makeOrientation(polys,addedPaths,cPoints, Math.PI/6);
+  var orient3 = makeOrientation(polys,addedPaths,cPoints,Math.PI/4);
+  var orient4 = makeOrientation(polys,addedPaths,cPoints, Math.PI/3);
+  var orient5 = makeOrientation(polys,addedPaths,cPoints,Math.PI/2);
+  var orient6 = makeOrientation(polys,addedPaths,cPoints, -Math.PI/3);
+  var orient7 = makeOrientation(polys,addedPaths,cPoints, -Math.PI/4);
+  var orient8 = makeOrientation(polys,addedPaths,cPoints, -Math.PI/6);
 
   return {
     name: name,
-    points: [orient1, orient2]
+    points: [orient1, orient2, orient3, orient4, orient5, orient6, orient7, orient8]
   }
 
 }
@@ -943,12 +1013,21 @@ function _calculateRailDroitCourt(angle) {
   for (var i=-2; i<1; i++) {
     pointsPath.push(new Array(0,i*u,0,(i+1)*u));
   }
+
+  var connectionsPoints = new Array();
+  connectionsPoints.push([pointsPath[0][0], pointsPath[0][1]]);
+  connectionsPoints.push([pointsPath[pointsPath.length-1][2], pointsPath[pointsPath.length-1][3]]);
+
   rotation(pointsPath,angle);
   arrondi(pointsPath);
 
+  rotation(connectionsPoints,angle);
+  arrondi(connectionsPoints);
+
   return {
     drawPoints : new Array(points),
-    paths : pointsPath
+    paths : pointsPath,
+    connectionsPoints : connectionsPoints
   }
 
 }
@@ -972,9 +1051,10 @@ function calculateRailXSwitch() {
 
   var polys = current.drawPoints;
   var addedPaths = current.paths;
+  var cPoints = current.connectionsPoints;
 
-  var orient1 = makeOrientation(polys,addedPaths,0);
-  var orient2 = makeOrientation(polys,addedPaths,Math.PI/2);
+  var orient1 = makeOrientation(polys, addedPaths, cPoints, 0);
+  var orient2 = makeOrientation(polys, addedPaths, cPoints, Math.PI/2);
 
   return {
     name: name,
@@ -983,7 +1063,7 @@ function calculateRailXSwitch() {
 
 }
 
-function  fusionne(piecesAfusionner) {
+function fusionne(piecesAfusionner) {
   // we will merge the 2 first pieces from array 'piecesAfusionner'
   console.log(" ------------");
   console.log(piecesAfusionner);
@@ -1008,6 +1088,7 @@ function  fusionne(piecesAfusionner) {
   // 'current' is the result of (piece1 + piece2 + .... + pieceN)
   var polys = current.drawPoints;
   var addedPaths = current.paths;
+  var cPoints = current.connectionsPoints;
 
   // Translating reference point (ie try to center the piece around coord 0,0)
   var dec = maxmin(addedPaths);
@@ -1015,12 +1096,13 @@ function  fusionne(piecesAfusionner) {
     translation(polys[i],dec.dx,dec.dy);
   }
   translation(addedPaths,dec.dx,dec.dy);
+  translation(cPoints,dec.dx,dec.dy);
 
-  var orient1 = makeOrientation(polys,addedPaths,0);
+  var orient1 = makeOrientation(polys,addedPaths, cPoints, 0);
   // Now, we have to calculate, rotation for 3 other angle.
-  var orient2 = makeOrientation(polys,addedPaths,Math.PI/2);
-  var orient3 = makeOrientation(polys,addedPaths,Math.PI);
-  var orient4 = makeOrientation(polys,addedPaths,Math.PI*1.5);
+  var orient2 = makeOrientation(polys,addedPaths, cPoints, Math.PI/2);
+  var orient3 = makeOrientation(polys,addedPaths, cPoints, Math.PI);
+  var orient4 = makeOrientation(polys,addedPaths, cPoints, Math.PI*1.5);
 
   var newPiece = {
     name: "YOUFOU"+Math.floor((Math.random()*1000)+1), // Generate a random name for the new piece
@@ -1055,7 +1137,6 @@ function  fusionne(piecesAfusionner) {
 }
 
 function fusionne2Pieces(piece1,piece2,dx,dy) {
-
   var pts1 = arrayCopy(piece1.drawPoints);
   var pts2 = arrayCopy(piece2.drawPoints); //   /!\ drawPoints is an array of array of points, i.e it can be several shapes
   // Translate piece2 by dx and dy (so that reference point is at the same point)
@@ -1099,11 +1180,73 @@ function fusionne2Pieces(piece1,piece2,dx,dy) {
   arrayMerge(addedPaths,paths1);
   arrayMerge(addedPaths,paths2);
 
-  return {
-    drawPoints : polys,
-    paths : addedPaths
+  var addedCPoints = [];
+  if (piece1.connectionsPoints && piece2.connectionsPoints) {
+    var cpoints1 = arrayCopy(piece1.connectionsPoints);
+    var cpoints2 = arrayCopy(piece2.connectionsPoints);
+    translation(cpoints2,dx,dy);
+
+    arrayMerge(addedCPoints,cpoints1);
+    arrayMerge(addedCPoints,cpoints2);
   }
 
+  // Filter connection points to keep points intersecting the outer shape
+  var cPointsFiltered = [];
+  for (var i=0; i<addedCPoints.length; i++) {
+    var keep = false;
+    if (intersectionSegmentEtPiece(polys, addedCPoints[i][0], addedCPoints[i][1])) {
+      cPointsFiltered.push(addedCPoints[i]);
+    }
+  }
+
+  return {
+    drawPoints : polys,
+    paths : addedPaths,
+    connectionsPoints : cPointsFiltered // addedCPoints
+  }
+
+}
+
+function isPointInsideSegment(ptX, ptY, lineStartX, lineStartY, lineEndX, lineEndY) {
+  var coefPartA = (ptY - lineStartY)  * (lineEndX - lineStartX);
+  var coefPartB = (lineEndY - lineStartY) * (ptX - lineStartX);
+
+  // Horizontal segment
+  if (lineStartY == lineEndY) {
+    if (ptY == lineStartY && ((ptX > lineStartX && ptX < lineEndX) || (ptX > lineEndX && ptX < lineStartX))) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  // Vertical segment
+  if (lineStartX == lineEndX) {
+    if (ptX == lineStartX && ((ptY > lineStartY && ptY < lineEndY) || (ptY > lineEndY && ptY < lineStartY))) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+  // Instead of testing pure equality of coefA and coefB, we need a small tolerance
+  if (Math.abs(coefPartA - coefPartB) < 0.00001) return true;
+}
+
+function intersectionSegmentEtPiece(drawPoints, ptX, ptY) {
+
+  arrondi(drawPoints);
+  var pt = [ptX, ptY];
+  arrondi(pt);
+
+  for(var i =0; i<drawPoints.length; i++) {
+    for(var j = 0; j< drawPoints[i].length-1; j++) {
+      var pt1 = drawPoints[i][j];
+      var pt2 = drawPoints[i][j+1];
+      var res = isPointInsideSegment(pt[0], pt[1], pt1[0], pt1[1], pt2[0], pt2[1]);
+      if (res) return true;
+    }
+  }
+  return false;
 }
 
 // Adding path's segments
@@ -1153,22 +1296,26 @@ function maxmin(paths) {
   }
 }
 
-function makeOrientation(polys,path,angle) {
+function makeOrientation(polys, path, cPoints, angle) {
   var newPolys = arrayCopy(polys);
   var newPath = arrayCopy(path);
+  var newCPoints = arrayCopy(cPoints);
+
   if (angle!=0) {
     for (var i=0; i<newPolys.length; i++) {
       rotation(newPolys[i],angle);
     }
     rotation(newPath,angle);
+    rotation(newCPoints,angle);
   }
   return {
     drawPoints : newPolys,
-    paths : newPath
+    paths : newPath,
+    connectionsPoints : newCPoints
   }
 }
 
-function _calculateRailSlice(angle,_reverse,_aiguillage) {
+function _calculateRailSlice(angle, _reverse) {
 
   // Compute points
   var points = new Array();
@@ -1198,33 +1345,14 @@ function _calculateRailSlice(angle,_reverse,_aiguillage) {
 
     var N = points.length;
 
-    // Avec la partie droite
-    if (_aiguillage) {
-      points.push(new Array(4.5*u,2.5*u));
-      points.push(new Array(-4.5*u,2.5*u));
-      points.push(new Array(-4.5*u,0.5*u));
-
-      for (var i=4.5; i>-4.5; i--) {
-        pointsPath.push(new Array(i*u,1.5*u,(i-1)*u,1.5*u));
-      }
-    }
-
     for (var i=N-1; i>=0; i--) { // Copy the upper curve but lower and in reversed order.
       yi = points[i][1]+2*u;
       xi = points[i][0];
-      if (_aiguillage) {
-        if (yi <= 0.5*u && y_old >0.5*u) {
-          points.push(new Array(xi,0.5*u));
-        }
-        if (yi <= 0.5*u) {
-          points.push(new Array(xi,yi));
-        }
-      } else {
-        points.push(new Array(xi,yi));
-      }
+      points.push(new Array(xi,yi));
       //pointsPath.push(new Array(xi,points[i][1]+u));
       y_old = yi;
     }
+    points.push(arrayCopy(points[0])); // Back to first point
 
   points.push(arrayCopy(points[0])); // Back to first point
 
@@ -1232,24 +1360,31 @@ function _calculateRailSlice(angle,_reverse,_aiguillage) {
   for (var i = N-1; i>0; i--) {
     pointsPath.push(new Array(points[i][0],points[i][1]+u,points[i-1][0],points[i-1][1]+u));
   }
-  //...
+
+  var connectionsPoints = new Array();
+  connectionsPoints.push([pointsPath[0][0], pointsPath[0][1]]);
+  connectionsPoints.push([pointsPath[N-2][2], pointsPath[N-2][3]]);
 
   if (_reverse) {
     reverse(points);
     reverse(pointsPath);
+    reverse(connectionsPoints);
   }
 
   // Translating reference point (ie try to center the piece around coord 0,0)
   translation(points,-0.5,-0.5);
   translation(pointsPath,-0.5,-0.5);
+  translation(connectionsPoints,-0.5,-0.5);
 
   // Rotate points
   rotation(points,angle);
   rotation(pointsPath,angle);
+  rotation(connectionsPoints,angle);
 
   return {
     drawPoints : new Array(points),
-    paths : pointsPath
+    paths : pointsPath,
+    connectionsPoints : connectionsPoints
   }
 
 }
@@ -1293,18 +1428,27 @@ function _calculateRailCourbe(radiusInt,radiusExt,angle) {
      pointsPath.push(new Array(x1,y1,x2,y2));
   }
 
+  var connectionsPoints = new Array();
+  connectionsPoints.push([pointsPath[0][0], pointsPath[0][1]]);
+  connectionsPoints.push([pointsPath[pointsPath.length-1][2], pointsPath[pointsPath.length-1][3]]);
+
   // Translating reference point (ie try to center the piece around coord 0,0)
   translation(pointsPath,-Math.round((radiusExt/u)/2),-Math.round((radiusExt/u)/2));
 
   // Rotate points
   rotation(pointsPath,angle);
 
+  translation(connectionsPoints,-Math.round((radiusExt/u)/2),-Math.round((radiusExt/u)/2));
+  rotation(connectionsPoints,angle);
+
   arrondi(points);
   arrondi(pointsPath);
+  arrondi(connectionsPoints);
 
   return {
     drawPoints : new Array(points),
-    paths : pointsPath
+    paths : pointsPath,
+    connectionsPoints : connectionsPoints
   }
 }
 
@@ -1312,7 +1456,6 @@ function _calculateRailCourbe(radiusInt,radiusExt,angle) {
 function drawPoints(ctx, x, y, pointsTab, color) {
 
   // Filling interior of the shape (coloring)
-  console.log(pointsTab);
   if (usePaint && color!="Red") {
     ctx.beginPath();
     ctx.fillStyle = "rgb(224,194,102)";
@@ -1352,19 +1495,37 @@ function drawRefPoint(ctx,x,y) {
 }
 
 // Paths are an array of segments (segment = array of 4 points x0,y0,x1,y1);
-function drawNewPath(ctx,x,y,points) {
+function drawNewPath(ctx,x,y,piece) {
 
+  if (piece.connectionsPoints) {
+    for (var j=0; j<piece.connectionsPoints.length; j++) {
+      ctx.beginPath();
+      ctx.fillStyle = "Pink";
+      r = 5;
+      ctx.arc(x+(piece.connectionsPoints[j][0]*(ur/u)),y+(piece.connectionsPoints[j][1]*(ur/u)),r,0,2*Math.PI,true);
+      ctx.fill();
+      ctx.closePath();
+    }
+  }
+
+  var points = piece.paths;
   var r = 2;
   if (!showPath) {
     return;
   }
 
   // Start and end of segment are drawn in blue
+  // points[j] is a segment (== [x1, y1, x2, y2])
   for (var j=0; j<points.length; j++) {
+
       ctx.beginPath();
       ctx.fillStyle = "Blue";
       ctx.arc(x+(points[j][0]*(ur/u)),y+(points[j][1]*(ur/u)),r,0,2*Math.PI,true);
       ctx.fill();
+      ctx.closePath();
+
+      ctx.beginPath();
+      ctx.fillStyle = "Blue";
       ctx.arc(x+(points[j][2]*(ur/u)),y+(points[j][3]*(ur/u)),r,0,2*Math.PI,true);
       ctx.fill();
   }
@@ -1452,7 +1613,7 @@ function arrondi(tab) {
 
 // polys is an array of polygone
 // A polygone is an array of array of points (array of 2 int)
-// ex: [[[x1,y1],[x2,y2]]]  with 1 sub poly
+// ex: [[[x1,y1],[x2,y2]], ...]  with 1 sub poly
 function geotrain2clipper(polys) {
   var subj_polygons = [];
   for (var i=0; i<polys.length; i++) {
