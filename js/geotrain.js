@@ -31,6 +31,20 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
 
+const DEG0 = 0;
+const DEG15 = Math.PI/12;
+const DEG30 = Math.PI/6;
+const DEG45 = Math.PI/4;
+const DEG60 = Math.PI/3;
+const DEG75 = (5 * Math.PI) / 12;
+const DEG90 = Math.PI / 2;
+const DEG105 = (7 * Math.PI) / 12;
+const DEG120 = (2 * Math.PI) / 3;
+const DEG135 = (3 * Math.PI) / 4;
+const DEG150 = (5 * Math.PI) / 6;
+const DEG165 = (11 * Math.PI) / 12;
+const DEG180 = Math.PI;
+
  var u = 100; // Base unit for calculating pieces coordinates
  var ur = 15; // Current number of pixels for a square / grid width and height
 // ratio = 15/100 = 0,15
@@ -723,15 +737,14 @@ function calculateRailCourbe(arg) {
     rayonExt = 4*u;
   }
 
-
-  tab.push(_calculateRailCourbe(rayonInt,rayonExt,Math.PI*(3/2)));
-  tab.push(_calculateRailCourbe(rayonInt,rayonExt,0));
-  tab.push(_calculateRailCourbe(rayonInt,rayonExt,Math.PI/2));
-  tab.push(_calculateRailCourbe(rayonInt,rayonExt,Math.PI));
+  var pointsTab = [];
+  [-DEG90, -DEG75, -DEG60, -DEG45, -DEG30, -DEG15, DEG0, DEG15, DEG30, DEG45, DEG60, DEG75, DEG90, DEG105, DEG120, DEG135, DEG150, DEG165, DEG180, -DEG165, -DEG150, -DEG135, -DEG120, -DEG105].forEach(function(angle, index) {
+    pointsTab.push(_calculateRailCourbe(rayonInt, rayonExt, angle));
+  });
 
   return {
     name: name,
-    points: tab
+    points: pointsTab
   }
 }
 
@@ -758,13 +771,15 @@ function calculateRailCroix() {
   translation(addedPaths,dec.dx,dec.dy);
   translation(cPoints,dec.dx,dec.dy);
 
-  var orient1 = makeOrientation(polys, addedPaths, cPoints, 0);
+  var pointsTab = [];
+  [DEG0, DEG15, DEG30, DEG45, -DEG30, -DEG15].forEach(function(angle, index) {
+    pointsTab.push(makeOrientation(polys, addedPaths, cPoints, angle));
+  });
 
   return {
     name: name,
-    points: [orient1]
+    points: pointsTab,
   }
-
 }
 
 function calculateRailAiguillageD() {
@@ -781,16 +796,15 @@ function calculateRailAiguillageD() {
   var addedPaths = current.paths;
   var cPoints = current.connectionsPoints;
 
-  var orient1 = makeOrientation(polys, addedPaths, cPoints, Math.PI*(3/2));
-  var orient2 = makeOrientation(polys, addedPaths, cPoints, 0);
-  var orient3 = makeOrientation(polys, addedPaths, cPoints, Math.PI/2);
-  var orient4 = makeOrientation(polys, addedPaths, cPoints, Math.PI);
+  var pointsTab = [];
+  [-DEG90, -DEG75, -DEG60, -DEG45, -DEG30, -DEG15, DEG0, DEG15, DEG30, DEG45, DEG60, DEG75, DEG90, DEG105, DEG120, DEG135, DEG150, DEG165, DEG180, -DEG165, -DEG150, -DEG135, -DEG120, -DEG105].forEach(function(angle, index) {
+    pointsTab.push(makeOrientation(polys, addedPaths, cPoints, angle));
+  });
 
   return {
     name: name,
-    points: [orient1, orient2, orient3, orient4]
+    points: pointsTab
   }
-
 }
 
 function calculateRailAiguillageG() {
@@ -808,16 +822,15 @@ function calculateRailAiguillageG() {
   var addedPaths = current.paths;
   var cPoints = current.connectionsPoints;
 
-  var orient1 = makeOrientation(polys, addedPaths, cPoints, Math.PI*(3/2));
-  var orient2 = makeOrientation(polys, addedPaths, cPoints, 0);
-  var orient3 = makeOrientation(polys, addedPaths, cPoints, Math.PI/2);
-  var orient4 = makeOrientation(polys, addedPaths, cPoints, Math.PI);
+  var pointsTab = [];
+  [-DEG90, -DEG75, -DEG60, -DEG45, -DEG30, -DEG15, DEG0, DEG15, DEG30, DEG45, DEG60, DEG75, DEG90, DEG105, DEG120, DEG135, DEG150, DEG165, DEG180, -DEG165, -DEG150, -DEG135, -DEG120, -DEG105].forEach(function(angle, index) {
+    pointsTab.push(makeOrientation(polys, addedPaths, cPoints, angle));
+  });
 
   return {
     name: name,
-    points: [orient1, orient2, orient3, orient4]
+    points: pointsTab
   }
-
 }
 
 function calculateRailAiguillageT() {
@@ -847,29 +860,24 @@ function calculateRailAiguillageT() {
   translation(addedPaths,dx,dy);
   translation(cPoints,dx,dy);
 
-  var orient1 = makeOrientation(polys, addedPaths, cPoints, Math.PI*(3/2));
-  var orient2 = makeOrientation(polys, addedPaths, cPoints, 0);
-  var orient3 = makeOrientation(polys, addedPaths, cPoints, Math.PI/2);
-  var orient4 = makeOrientation(polys, addedPaths, cPoints, Math.PI);
+  var pointsTab = [];
+  [-DEG90, -DEG75, -DEG60, -DEG45, -DEG30, -DEG15, DEG0, DEG15, DEG30, DEG45, DEG60, DEG75, DEG90, DEG105, DEG120, DEG135, DEG150, DEG165, DEG180, -DEG165, -DEG150, -DEG135, -DEG120, -DEG105].forEach(function(angle, index) {
+    pointsTab.push(makeOrientation(polys, addedPaths, cPoints, angle));
+  });
 
   return {
     name: name,
-    points: [orient1, orient2, orient3, orient4]
-  }
-
-  return {
-    name: name,
-    points: tab
+    points: pointsTab
   }
 }
 
 function calculateRailSlice() {
 
   name = "SLICE";
-  tab = new Array();
-
-  tab.push(_calculateRailSlice(0,false,false));
-  tab.push(_calculateRailSlice(Math.PI/2,false,false));
+  var tab = [];
+  [-DEG90, -DEG75, -DEG60, -DEG45, -DEG30, -DEG15, DEG0, DEG15, DEG30, DEG45, DEG60, DEG75, DEG90, DEG105, DEG120, DEG135, DEG150, DEG165, DEG180, -DEG165, -DEG150, -DEG135, -DEG120, -DEG105].forEach(function(angle, index) {
+    tab.push(_calculateRailSlice(angle, false, false));
+  });
 
   return {
     name: name,
@@ -880,14 +888,14 @@ function calculateRailSlice() {
 function calculateRailSliceR() {
 
   name = "RSLICE";
-  tab = new Array();
-
-  tab.push(_calculateRailSlice(0,true,false));
-  tab.push(_calculateRailSlice(Math.PI/2,true,false));
+  var pointsTab = [];
+  [-DEG90, -DEG75, -DEG60, -DEG45, -DEG30, -DEG15, DEG0, DEG15, DEG30, DEG45, DEG60, DEG75, DEG90, DEG105, DEG120, DEG135, DEG150, DEG165, DEG180, -DEG165, -DEG150, -DEG135, -DEG120, -DEG105].forEach(function(angle, index) {
+    pointsTab.push(_calculateRailSlice(angle, true, false));
+  });
 
   return {
     name: name,
-    points: tab
+    points: pointsTab
   }
 }
 
@@ -906,17 +914,15 @@ function calculateRailSlice_Switch() {
   var addedPaths = current.paths;
   var cPoints = current.connectionsPoints;
 
-  var orient1 = makeOrientation(polys, addedPaths, cPoints, 0);
-  var orient2 = makeOrientation(polys, addedPaths, cPoints, Math.PI/2);
-  var orient3 = makeOrientation(polys, addedPaths, cPoints, Math.PI);
-  var orient4 = makeOrientation(polys, addedPaths, cPoints, Math.PI*(3/2));
-
+  var pointsTab = [];
+  [-DEG90, -DEG75, -DEG60, -DEG45, -DEG30, -DEG15, DEG0, DEG15, DEG30, DEG45, DEG60, DEG75, DEG90, DEG105, DEG120, DEG135, DEG150, DEG165, DEG180, -DEG165, -DEG150, -DEG135, -DEG120, -DEG105].forEach(function(angle, index) {
+    pointsTab.push(makeOrientation(polys, addedPaths, cPoints, angle));
+  });
 
   return {
     name: name,
-    points: [orient1, orient2, orient3, orient4]
+    points: pointsTab
   }
-
 }
 
 function calculateRailSliceR_Switch() {
@@ -934,16 +940,15 @@ function calculateRailSliceR_Switch() {
   var addedPaths = current.paths;
   var cPoints = current.connectionsPoints;
 
-  var orient1 = makeOrientation(polys, addedPaths, cPoints, 0);
-  var orient2 = makeOrientation(polys, addedPaths, cPoints, Math.PI/2);
-  var orient3 = makeOrientation(polys, addedPaths, cPoints, Math.PI);
-  var orient4 = makeOrientation(polys, addedPaths, cPoints, Math.PI*(3/2));
+  var tab = [];
+  [-DEG90, -DEG75, -DEG60, -DEG45, -DEG30, -DEG15, DEG0, DEG15, DEG30, DEG45, DEG60, DEG75, DEG90, DEG105, DEG120, DEG135, DEG150, DEG165, DEG180, -DEG165, -DEG150, -DEG135, -DEG120, -DEG105].forEach(function(angle, index) {
+    tab.push(makeOrientation(polys, addedPaths, cPoints, angle));
+  });
 
   return {
     name: name,
-    points: [orient1, orient2, orient3, orient4]
+    points: tab
   }
-
 }
 
 function calculateRailDroit() {
@@ -966,33 +971,29 @@ function calculateRailDroit() {
   translation(addedPaths,dec.dx,dec.dy);
   translation(cPoints,dec.dx,dec.dy);
 
-  var orient1 = makeOrientation(polys,addedPaths,cPoints,0);
-  var orient2 = makeOrientation(polys,addedPaths,cPoints, Math.PI/6);
-  var orient3 = makeOrientation(polys,addedPaths,cPoints,Math.PI/4);
-  var orient4 = makeOrientation(polys,addedPaths,cPoints, Math.PI/3);
-  var orient5 = makeOrientation(polys,addedPaths,cPoints,Math.PI/2);
-  var orient6 = makeOrientation(polys,addedPaths,cPoints, -Math.PI/3);
-  var orient7 = makeOrientation(polys,addedPaths,cPoints, -Math.PI/4);
-  var orient8 = makeOrientation(polys,addedPaths,cPoints, -Math.PI/6);
+  var pointsTab = [];
+  [DEG0, DEG15, DEG30, DEG45, DEG60, DEG75, DEG90, -DEG75, -DEG60, -DEG45, -DEG30, -DEG15].forEach(function(angle, index) {
+    pointsTab.push(makeOrientation(polys, addedPaths, cPoints, angle));
+  });
 
   return {
     name: name,
-    points: [orient1, orient2, orient3, orient4, orient5, orient6, orient7, orient8]
+    points: pointsTab
   }
-
 }
 
 function calculateRailDroitCourt() {
 
   name = "RAIL_DROIT_COURT";
-  tab = new Array();
+  var pointsTab = [];
 
-  tab.push(_calculateRailDroitCourt(Math.PI/2));
-  tab.push(_calculateRailDroitCourt(0));
+  [-DEG90, -DEG75, -DEG60, -DEG45, -DEG30, -DEG15, DEG0, DEG15, DEG30, DEG45, DEG60, DEG75, DEG90, DEG105, DEG120, DEG135, DEG150, DEG165, DEG180, -DEG165, -DEG150, -DEG135, -DEG120, -DEG105].forEach(function(angle, index) {
+    pointsTab.push(_calculateRailDroitCourt(angle));
+  });
 
   return {
     name: name,
-    points: tab
+    points: pointsTab
   }
 }
 
@@ -1053,14 +1054,15 @@ function calculateRailXSwitch() {
   var addedPaths = current.paths;
   var cPoints = current.connectionsPoints;
 
-  var orient1 = makeOrientation(polys, addedPaths, cPoints, 0);
-  var orient2 = makeOrientation(polys, addedPaths, cPoints, Math.PI/2);
+  var pointsTab = [];
+  [-DEG90, -DEG75, -DEG60, -DEG45, -DEG30, -DEG15, DEG0, DEG15, DEG30, DEG45, DEG60, DEG75, DEG90, DEG105, DEG120, DEG135, DEG150, DEG165, DEG180, -DEG165, -DEG150, -DEG135, -DEG120, -DEG105].forEach(function(angle, index) {
+    pointsTab.push(makeOrientation(polys, addedPaths, cPoints, angle));
+  });
 
   return {
     name: name,
-    points: [orient1, orient2]
+    points: pointsTab
   }
-
 }
 
 function fusionne(piecesAfusionner) {
@@ -1309,6 +1311,7 @@ function makeOrientation(polys, path, cPoints, angle) {
     rotation(newCPoints,angle);
   }
   return {
+    angle : Math.round(angle * 180/Math.PI),
     drawPoints : newPolys,
     paths : newPath,
     connectionsPoints : newCPoints
@@ -1382,6 +1385,7 @@ function _calculateRailSlice(angle, _reverse) {
   rotation(connectionsPoints,angle);
 
   return {
+    angle : Math.round(angle * 180/Math.PI),
     drawPoints : new Array(points),
     paths : pointsPath,
     connectionsPoints : connectionsPoints
@@ -1446,6 +1450,7 @@ function _calculateRailCourbe(radiusInt,radiusExt,angle) {
   arrondi(connectionsPoints);
 
   return {
+    angle : Math.round(angle * 180/Math.PI),
     drawPoints : new Array(points),
     paths : pointsPath,
     connectionsPoints : connectionsPoints
