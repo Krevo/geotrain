@@ -932,7 +932,7 @@ function calculateRailSliceR_Switch() {
   name = "RSLICE_SWITCH";
 
   obj1 = _calculateRailSlice(0,true,false);
-  obj2 = _calculateRailDroitCourt(Math.PI/2);
+  obj2 = _calculateRailDroitCourt(DEG90);
 
   current = fusionne2Pieces(obj1,obj2,2,1);
   current = fusionne2Pieces(current,obj2,-4,1);
@@ -957,9 +957,9 @@ function calculateRailDroit() {
 
   name = "RAIL_DROIT";
 
-  shortTrackH = _calculateRailDroitCourt(Math.PI/2); // horizontal short straight track
+  shortTrackH = _calculateRailDroitCourt(DEG0); // vertical short straight track
 
-  current = fusionne2Pieces(shortTrackH,shortTrackH,3,0);
+  current = fusionne2Pieces(shortTrackH,shortTrackH,0,3);
 
   var polys = current.drawPoints;
   var addedPaths = current.paths;
@@ -974,7 +974,7 @@ function calculateRailDroit() {
   translation(cPoints,dec.dx,dec.dy);
 
   var pointsTab = [];
-  [DEG0, DEG15, DEG30, DEG45, DEG60, DEG75, DEG90, -DEG75, -DEG60, -DEG45, -DEG30, -DEG15].forEach(function(angle, index) {
+  [-DEG90, -DEG75, -DEG60, -DEG45, -DEG30, -DEG15, DEG0, DEG15, DEG30, DEG45, DEG60, DEG75].forEach(function(angle, index) {
     pointsTab.push(makeOrientation(polys, addedPaths, cPoints, angle));
   });
 
@@ -1028,6 +1028,7 @@ function _calculateRailDroitCourt(angle) {
   arrondi(connectionsPoints);
 
   return {
+    angle : Math.round(angle * 180/Math.PI),
     drawPoints : new Array(points),
     paths : pointsPath,
     connectionsPoints : connectionsPoints
