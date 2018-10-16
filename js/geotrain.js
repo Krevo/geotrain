@@ -312,13 +312,6 @@ function moveMap() {
 
 function giveDecalageForMagneticAttraction(xreel, yreel, cPoints) {
 
-  console.log("emplacement reel point central");
-  console.log("x = " + xreel);
-  console.log("y = " + yreel);
-  console.log("Du coup, on va chercher l'emplacement réel des connectionPoints de la piece à placer");
-
-  console.log(pieces[indexPieces].name);
-  console.log(cPoints);
   var distMin = ur / 2;
   var dx = 0;
   var dy = 0;
@@ -330,21 +323,13 @@ function giveDecalageForMagneticAttraction(xreel, yreel, cPoints) {
       for (var k=0; k<mapCPoints.length; k++) {
         var mx = ((mapx+globaldx)*ur) + mapCPoints[k][0] * (ur/u);
         var my = ((mapy+globaldy)*ur) + mapCPoints[k][1] * (ur/u);
-        console.log("mx"+k+" = "+mx);
-        console.log("my"+k+" = "+my);
         for (var j=0; j<cPoints.length; j++) {
           var cx = (xreel + cPoints[j][0] * (ur/u));
           var cy = (yreel + cPoints[j][1] * (ur/u));
-          console.log("x"+j+" = "+cx);
-          console.log("y"+j+" = "+cy);
           dist = Math.sqrt(Math.pow(cx-mx, 2)+Math.pow(cy-my, 2));
-          console.log("dist = "+dist+" (sachant que ur = "+ur+")");
           if (dist < distMin) {
-            console.log("Nouvelle distance minimale !");
             dx = mx - cx;
             dy = my - cy;
-            console.log("Décalage dx = "+dx);
-            console.log("Décalage dy = "+dy);
             distMin = dist;
           }
         }
@@ -651,44 +636,65 @@ function _loadCircuit1() {
   _loadCircuit("geotrax_layout1.xml");
 }
 
+function  findOrientationForPiece(pieceName, angle) {
+    var i = findPieceIndexByName(pieceName);
+    console.log("find Piece "+pieceName);
+    console.log(pieces[i]);
+    orientation = 1;
+    pieces[i].points.forEach(function(obj, index) {
+      console.log("angle examiné => "+obj.angle);
+      console.log("angle recherché = >"+angle);
+      console.log(obj.angle == angle);
+      if (obj.angle == angle) {
+        console.log("Orientation trouvée !");
+        orientation = index;
+      }
+    });
+    return orientation;
+}
+
 function _loadCircuit2() {
 
     map = new Array();
-    map.push(new Array(28,6,"RAIL_DROIT",H));
-    map.push(new Array(36,10,"LONG_CURVE",NE));
-    map.push(new Array(20,10,"LONG_CURVE",NO));
+    map.push(new Array(28,6,"RAIL_DROIT",findOrientationForPiece("RAIL_DROIT", 90)+1/*H*/));
+    map.push(new Array(36,10,"LONG_CURVE",findOrientationForPiece("LONG_CURVE", -90)+1/*NE*/));
+    map.push(new Array(20,10,"LONG_CURVE",findOrientationForPiece("LONG_CURVE", 180)+1));
 
-    map.push(new Array(9,20,"CURVE",NO));
+    map.push(new Array(9,20,"CURVE",findOrientationForPiece("CURVE", 180)+1/*NO*/));
     map.push(new Array(16,18,"CROSSING",1));
-    map.push(new Array(22,18,"RAIL_DROIT",H));
-    map.push(new Array(28,18,"RAIL_DROIT",H));
-    map.push(new Array(34,18,"RAIL_DROIT",H));
+
+    map.push(new Array(22,18,"RAIL_DROIT", findOrientationForPiece("RAIL_DROIT", 90)+1));
+    map.push(new Array(28,18,"RAIL_DROIT",findOrientationForPiece("RAIL_DROIT", 90)+1));
+    map.push(new Array(34,18,"RAIL_DROIT",findOrientationForPiece("RAIL_DROIT", 90)+1));
     map.push(new Array(40,18,"CROSSING",1));
-    map.push(new Array(47,20,"CURVE",NE));
 
-    map.push(new Array(7,27,"RAIL_DROIT",V));
-    map.push(new Array(7,33,"RAIL_DROIT",V));
-    map.push(new Array(11,41,"LONG_CURVE",SO));
+    map.push(new Array(47,20,"CURVE",findOrientationForPiece("CURVE", -90)+1/*NE*/));
 
-    map.push(new Array(40,23,"RAIL_DROIT_COURT",V));
-    map.push(new Array(40,27,"RAIL_DROIT",V));
+    map.push(new Array(7,27,"RAIL_DROIT",findOrientationForPiece("RAIL_DROIT", 0)+1));
+    map.push(new Array(7,33,"RAIL_DROIT",findOrientationForPiece("RAIL_DROIT", 0)+1));
+    map.push(new Array(11,41,"LONG_CURVE",findOrientationForPiece("LONG_CURVE", 90)+1/*SO*/));
+
+    map.push(new Array(40,23,"RAIL_DROIT_COURT", findOrientationForPiece("RAIL_DROIT_COURT", 0)+1));
+    map.push(new Array(40,27,"RAIL_DROIT",findOrientationForPiece("RAIL_DROIT", 0)+1));
     map.push(new Array(40,33,"CROSSING",1));
-    map.push(new Array(40,39,"RAIL_DROIT",V));
-    map.push(new Array(40,44,"RAIL_DROIT_COURT",V));
+    map.push(new Array(40,39,"RAIL_DROIT",findOrientationForPiece("RAIL_DROIT", 0)+1));
+    map.push(new Array(40,44,"RAIL_DROIT_COURT",findOrientationForPiece("RAIL_DROIT_COURT", 0)+1));
 
-    map.push(new Array(38,49,"CURVE",SE));
-    map.push(new Array(30,49,"CURVE",SO));
-    map.push(new Array(26,43,"AIGUILLAGE_D",SE));
-    map.push(new Array(30,35,"AIGUILLAGE_D",NO));
+    map.push(new Array(38,49,"CURVE",findOrientationForPiece("CURVE", 0)+1/*SE*/));
+    map.push(new Array(30,49,"CURVE",findOrientationForPiece("CURVE", 90)+1/*SO*/));
 
-    map.push(new Array(19,45,"RAIL_DROIT",H));
-    map.push(new Array(35,33,"RAIL_DROIT_COURT",H));
+    map.push(new Array(26,43,"AIGUILLAGE_D",findOrientationForPiece("AIGUILLAGE_D", 0)+1/*SE*/));
+    map.push(new Array(30,35,"AIGUILLAGE_D",findOrientationForPiece("AIGUILLAGE_D", 180)+1/*NO*/));
 
-    map.push(new Array(49,26,"RAIL_DROIT_COURT",V));
-    map.push(new Array(47,31,"CURVE",SE));
+    map.push(new Array(19,45,"RAIL_DROIT",findOrientationForPiece("RAIL_DROIT", 90)+1));
+    map.push(new Array(35,33,"RAIL_DROIT_COURT",findOrientationForPiece("RAIL_DROIT_COURT", 90)+1));
 
-    map.push(new Array(26,29,"CURVE",NE));
-    map.push(new Array(18,25,"CURVE",SO));
+    map.push(new Array(49,26,"RAIL_DROIT_COURT",findOrientationForPiece("RAIL_DROIT_COURT", 0)+1));
+    map.push(new Array(47,31,"CURVE",findOrientationForPiece("CURVE", 0)+1/*SE*/));
+
+    map.push(new Array(26,29,"CURVE",findOrientationForPiece("CURVE", -90)+1/*NE*/));
+
+      map.push(new Array(18,25,"CURVE",findOrientationForPiece("CURVE", 90)+1/*SO*/));
 
 }
 
@@ -974,7 +980,7 @@ function calculateRailDroit() {
   translation(cPoints,dec.dx,dec.dy);
 
   var pointsTab = [];
-  [-DEG90, -DEG75, -DEG60, -DEG45, -DEG30, -DEG15, DEG0, DEG15, DEG30, DEG45, DEG60, DEG75].forEach(function(angle, index) {
+  [DEG90, -DEG75, -DEG60, -DEG45, -DEG30, -DEG15, DEG0, DEG15, DEG30, DEG45, DEG60, DEG75].forEach(function(angle, index) {
     pointsTab.push(makeOrientation(polys, addedPaths, cPoints, angle));
   });
 
