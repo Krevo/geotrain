@@ -4,205 +4,204 @@
     <name>CURVE</name>
     <x>40</x>
     <y>4</y>
-    <orientation>4</orientation>
+    <angle>180</angle>
   </piece>
   <piece>
     <name>CURVE</name>
     <x>48</x>
     <y>4</y>
-    <orientation>1</orientation>
+    <angle>-90</angle>
   </piece>
   <piece>
     <name>CURVE</name>
     <x>52</x>
     <y>12</y>
-    <orientation>3</orientation>
+    <angle>90</angle>
   </piece>
   <piece>
     <name>CURVE</name>
     <x>60</x>
     <y>16</y>
-    <orientation>1</orientation>
+    <angle>-90</angle>
   </piece>
   <piece>
     <name>CURVE</name>
     <x>60</x>
     <y>24</y>
-    <orientation>2</orientation>
+    <angle>0</angle>
   </piece>
   <piece>
     <name>RAIL_DROIT</name>
     <x>53</x>
     <y>26</y>
-    <orientation>1</orientation>
+    <angle>90</angle>
   </piece>
   <piece>
     <name>AIGUILLAGE_D</name>
     <x>48</x>
     <y>28</y>
-    <orientation>1</orientation>
+    <angle>-90</angle>
   </piece>
   <piece>
     <name>LONG_CURVE</name>
     <x>39</x>
     <y>30</y>
-    <orientation>4</orientation>
+    <angle>180</angle>
   </piece>
   <piece>
     <name>RAIL_DROIT</name>
     <x>50</x>
     <y>35</y>
-    <orientation>2</orientation>
+    <angle>0</angle>
   </piece>
   <piece>
     <name>RAIL_DROIT</name>
     <x>50</x>
     <y>41</y>
-    <orientation>2</orientation>
+    <angle>0</angle>
   </piece>
   <piece>
     <name>RAIL_DROIT_COURT</name>
     <x>50</x>
     <y>46</y>
-    <orientation>2</orientation>
+    <angle>0</angle>
   </piece>
   <piece>
     <name>CURVE</name>
     <x>48</x>
     <y>51</y>
-    <orientation>2</orientation>
+    <angle>0</angle>
   </piece>
   <piece>
     <name>RAIL_DROIT</name>
     <x>41</x>
     <y>53</y>
-    <orientation>1</orientation>
+    <angle>90</angle>
   </piece>
   <piece>
     <name>RAIL_DROIT</name>
     <x>35</x>
     <y>53</y>
-    <orientation>1</orientation>
+    <angle>90</angle>
   </piece>
   <piece>
     <name>AIGUILLAGE_D</name>
     <x>28</x>
     <y>51</y>
-    <orientation>3</orientation>
+    <angle>90</angle>
   </piece>
   <piece>
     <name>RAIL_DROIT</name>
     <x>23</x>
     <y>53</y>
-    <orientation>1</orientation>
+    <angle>90</angle>
   </piece>
   <piece>
     <name>RAIL_DROIT_COURT</name>
     <x>26</x>
     <y>46</y>
-    <orientation>2</orientation>
+    <angle>0</angle>
   </piece>
   <piece>
     <name>CROSSING</name>
     <x>26</x>
     <y>41</y>
-    <orientation>1</orientation>
+    <angle>0</angle>
   </piece>
   <piece>
     <name>RAIL_DROIT</name>
     <x>26</x>
     <y>35</y>
-    <orientation>2</orientation>
+    <angle>0</angle>
   </piece>
   <piece>
     <name>RAIL_DROIT</name>
     <x>26</x>
     <y>29</y>
-    <orientation>2</orientation>
+    <angle>0</angle>
   </piece>
   <piece>
     <name>RAIL_DROIT</name>
     <x>26</x>
     <y>23</y>
-    <orientation>2</orientation>
+    <angle>0</angle>
   </piece>
   <piece>
     <name>RAIL_DROIT</name>
     <x>23</x>
     <y>14</y>
-    <orientation>1</orientation>
+    <angle>90</angle>
   </piece>
   <piece>
     <name>AIGUILLAGE_G</name>
     <x>28</x>
     <y>16</y>
-    <orientation>4</orientation>
+    <angle>180</angle>
   </piece>
   <piece>
     <name>CURVE</name>
     <x>36</x>
     <y>12</y>
-    <orientation>2</orientation>
+    <angle>0</angle>
   </piece>
   <piece>
     <name>CURVE</name>
     <x>33</x>
     <y>39</y>
-    <orientation>2</orientation>
+    <angle>0</angle>
   </piece>
   <piece>
     <name>RAIL_DROIT_COURT</name>
     <x>18</x>
     <y>53</y>
-    <orientation>1</orientation>
+    <angle>90</angle>
   </piece>
   <piece>
     <name>CURVE</name>
     <x>13</x>
     <y>51</y>
-    <orientation>3</orientation>
+    <angle>90</angle>
   </piece>
   <piece>
     <name>CURVE</name>
     <x>13</x>
     <y>43</y>
-    <orientation>4</orientation>
+    <angle>180</angle>
   </piece>
   <piece>
     <name>AIGUILLAGE_D</name>
     <x>19</x>
     <y>39</y>
-    <orientation>3</orientation>
+    <angle>90</angle>
   </piece>
   <piece>
     <name>CURVE</name>
     <x>15</x>
     <y>31</y>
-    <orientation>1</orientation>
+    <angle>-90</angle>
   </piece>
   <piece>
     <name>LONG_CURVE</name>
     <x>6</x>
     <y>25</y>
-    <orientation>3</orientation>
+    <angle>90</angle>
   </piece>
   <piece>
     <name>RAIL_DROIT</name>
     <x>11</x>
     <y>14</y>
-    <orientation>1</orientation>
+    <angle>90</angle>
   </piece>
   <piece>
     <name>RAIL_DROIT</name>
     <x>17</x>
     <y>14</y>
-    <orientation>1</orientation>
+    <angle>90</angle>
   </piece>
   <piece>
     <name>CURVE</name>
     <x>4</x>
     <y>16</y>
-    <orientation>4</orientation>
+    <angle>180</angle>
   </piece>
 </layout>
- 

@@ -577,7 +577,7 @@ function redrawForeground() {
 
 function loadPieceData(nodeElem) {
     var childElem;
-
+    var angle = -1;
     // Processing element's children
     for (var i=0; i<nodeElem.childNodes.length; i++) {
       childElem = nodeElem.childNodes[i];
@@ -589,10 +589,15 @@ function loadPieceData(nodeElem) {
            y = readInt(childElem);
         } else if (childElem.nodeName=='orientation') {
            orientation = readInt(childElem);
+         } else if (childElem.nodeName=='angle') {
+           angle = readInt(childElem);
         } else if (childElem.nodeName=='name') {
            name = readString(childElem);
         }
       }
+    }
+    if (angle != -1) {
+      return new Array(x,y,name, findOrientationForPiece(name, angle) + 1);
     }
     return new Array(x,y,name,orientation);
 }
