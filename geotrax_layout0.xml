@@ -156,8 +156,7 @@
     <name>SLICE</name>
     <x>50</x>
     <y>5</y>
-    <angle>0</angle>
-	<angle>90</angle>
+	  <angle>90</angle>
   </piece>
   <piece>
     <name>SLICE</name>
