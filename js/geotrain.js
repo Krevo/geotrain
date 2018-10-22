@@ -645,7 +645,7 @@ function  findOrientationForPiece(pieceName, angle) {
     var i = findPieceIndexByName(pieceName);
     console.log("find Piece "+pieceName);
     console.log(pieces[i]);
-    orientation = 1;
+    var orientation = 1;
     pieces[i].points.forEach(function(obj, index) {
       console.log("angle examiné => "+obj.angle);
       console.log("angle recherché = >"+angle);
