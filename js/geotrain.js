@@ -145,6 +145,17 @@ var map = new Array();
   pieces.push(calculateRailCourbe("short"));
   pieces.push(calculateRailCourbe());
   pieces.push(calculateRailCourbe("long"));
+
+// Test courbes à 15°
+pieces.push(calculateRailCourbe("short", Math.PI/12));
+pieces.push(calculateRailCourbe("", Math.PI/12));
+pieces.push(calculateRailCourbe("long", Math.PI/12));
+
+// test courbes à 45°
+pieces.push(calculateRailCourbe("short", Math.PI/4));
+pieces.push(calculateRailCourbe("", Math.PI/4));
+pieces.push(calculateRailCourbe("long", Math.PI/4));
+
   pieces.push(calculateRailCroix());
   pieces.push(calculateRailAiguillageD());
   pieces.push(calculateRailAiguillageG());
@@ -189,9 +200,7 @@ function renderPiece(ctx,x,y,name,orientation) {
       }
       pointsToRenderTab = pieceToRender.points[orientation-1].drawPoints;
       drawPoints(ctx,x,y,pointsToRenderTab,"Black");
-
-      pathsToRenderTab = pieceToRender.points[orientation-1].paths;
-
+      drawConnectPoints(ctx,x,y,pieceToRender.points[orientation-1]);
       drawNewPath(ctx,x,y,pieceToRender.points[orientation-1]);
       drawRefPoint(ctx,x,y);
    }
@@ -643,15 +652,10 @@ function _loadCircuit1() {
 
 function  findOrientationForPiece(pieceName, angle) {
     var i = findPieceIndexByName(pieceName);
-    console.log("find Piece "+pieceName);
-    console.log(pieces[i]);
+    console.log("find orientation "+angle+" of piece "+pieceName);
     var orientation = 1;
     pieces[i].points.forEach(function(obj, index) {
-      console.log("angle examiné => "+obj.angle);
-      console.log("angle recherché = >"+angle);
-      console.log(obj.angle == angle);
       if (obj.angle == angle) {
-        console.log("Orientation trouvée !");
         orientation = index;
       }
     });
@@ -732,7 +736,7 @@ function redrawGrid() {
   }
 }
 
-function calculateRailCourbe(arg) {
+function calculateRailCourbe(arg, ouverture = Math.PI/2) {
 
   name = "CURVE";
   tab = new Array();
@@ -750,9 +754,15 @@ function calculateRailCourbe(arg) {
     rayonExt = 4*u;
   }
 
+  var deg = Math.round(180 * ouverture / Math.PI);
+
+  if (ouverture != Math.PI/2) {
+    name += "_"  +deg;
+  }
+
   var pointsTab = [];
   [-DEG90, -DEG75, -DEG60, -DEG45, -DEG30, -DEG15, DEG0, DEG15, DEG30, DEG45, DEG60, DEG75, DEG90, DEG105, DEG120, DEG135, DEG150, DEG165, DEG180, -DEG165, -DEG150, -DEG135, -DEG120, -DEG105].forEach(function(angle, index) {
-    pointsTab.push(_calculateRailCourbe(rayonInt, rayonExt, angle));
+    pointsTab.push(_calculateRailCourbe(rayonInt, rayonExt, angle, ouverture));
   });
 
   return {
@@ -1407,15 +1417,15 @@ function _calculateRailSlice(angle, _reverse) {
 
 }
 
-function _calculateRailCourbe(radiusInt,radiusExt,angle) {
+function _calculateRailCourbe(radiusInt,radiusExt,angle, ouverture = Math.PI/2) {
 
   // Compute points
   var points = new Array();
 
-  points.push(new Array(0,radiusInt));
-  points.push(new Array(0,radiusExt));
+  //points.push(new Array(0,radiusInt));
+  //points.push(new Array(0,radiusExt));
 
-  for (var i=(Math.PI/2); i>=0; i=i-(Math.PI/2)/15) {
+  for (var i=ouverture; i>=0; i=i-ouverture/15) {
      xi = Math.cos(i)*radiusExt;
      yi = Math.sin(i)*radiusExt;
      points.push(new Array(xi,yi));
@@ -1423,13 +1433,18 @@ function _calculateRailCourbe(radiusInt,radiusExt,angle) {
 
   points.push(new Array(radiusInt,0));
 
-  for (var i=0; i<=(Math.PI/2); i=i+(Math.PI/2)/15) {
+  for (var i=0; i<=ouverture; i=i+(ouverture/15)) {
      xi = Math.cos(i)*radiusInt;
      yi = Math.sin(i)*radiusInt;
      points.push(new Array(xi,yi));
   }
 
-  translation(points,-Math.round((radiusExt/u)/2),-Math.round((radiusExt/u)/2));
+  var t = findCenter(points);
+  if (ouverture == Math.PI/2) {
+    translation(points,-Math.round((radiusExt/u)/2),-Math.round((radiusExt/u)/2));
+  } else {
+    translation(points,-Math.round((t.xMin+(t.xMax-t.xMin)/2)/u),-Math.round((t.yMin+(t.yMax-t.yMin)/2))/u);
+  }
   rotation(points,angle);
 
   // Path
@@ -1437,8 +1452,8 @@ function _calculateRailCourbe(radiusInt,radiusExt,angle) {
   var radiusInter = radiusInt+(radiusExt-radiusInt)/2;
 
   for (var i=0; i<8; i++) {
-     j = i * (Math.PI/2)/8;
-     k = (i+1) * (Math.PI/2)/8;
+     j = i * (ouverture/8);
+     k = (i+1) * (ouverture/8);
      x1 = Math.cos(j)*radiusInter;
      y1 = Math.sin(j)*radiusInter;
      x2 = Math.cos(k)*radiusInter;
@@ -1451,12 +1466,21 @@ function _calculateRailCourbe(radiusInt,radiusExt,angle) {
   connectionsPoints.push([pointsPath[pointsPath.length-1][2], pointsPath[pointsPath.length-1][3]]);
 
   // Translating reference point (ie try to center the piece around coord 0,0)
-  translation(pointsPath,-Math.round((radiusExt/u)/2),-Math.round((radiusExt/u)/2));
+  if (ouverture == Math.PI/2) {
+    translation(pointsPath,-Math.round((radiusExt/u)/2),-Math.round((radiusExt/u)/2));
+  } else {
+    translation(pointsPath,-Math.round((t.xMin+(t.xMax-t.xMin)/2)/u),-Math.round((t.yMin+(t.yMax-t.yMin)/2))/u);
+  }
 
   // Rotate points
   rotation(pointsPath,angle);
 
-  translation(connectionsPoints,-Math.round((radiusExt/u)/2),-Math.round((radiusExt/u)/2));
+  if (ouverture == Math.PI/2) {
+    translation(connectionsPoints,-Math.round((radiusExt/u)/2),-Math.round((radiusExt/u)/2));
+  } else {
+    translation(connectionsPoints,-Math.round((t.xMin+(t.xMax-t.xMin)/2)/u),-Math.round((t.yMin+(t.yMax-t.yMin)/2))/u);
+  }
+
   rotation(connectionsPoints,angle);
 
   arrondi(points);
@@ -1513,8 +1537,7 @@ function drawRefPoint(ctx,x,y) {
   }
 }
 
-// Paths are an array of segments (segment = array of 4 points x0,y0,x1,y1);
-function drawNewPath(ctx,x,y,piece) {
+function drawConnectPoints(ctx,x,y,piece) {
 
   if (piece.connectionsPoints) {
     for (var j=0; j<piece.connectionsPoints.length; j++) {
@@ -1526,6 +1549,10 @@ function drawNewPath(ctx,x,y,piece) {
       ctx.closePath();
     }
   }
+}
+
+// Paths are an array of segments (segment = array of 4 points x0,y0,x1,y1);
+function drawNewPath(ctx,x,y,piece) {
 
   var points = piece.paths;
   var r = 2;
@@ -1628,6 +1655,31 @@ function arrondi(tab) {
       tab[i] = Math.round(tab[i]*100)/100;
     }
   }
+}
+
+function findCenter(points) {
+
+  var xMin = points[0][0];
+  var xMax = xMin;
+  var yMin = points[0][1];
+  var yMax = yMin;
+
+  for (var i=0; i<points.length; i++) {
+    x = points[i][0];
+    y = points[i][1];
+    if (x < xMin) { xMin = x; }
+    if (y < yMin) { yMin = y; }
+    if (x > xMax) { xMax = x; }
+    if (y > yMax) { yMax
+       = y; }
+  }
+
+  return {
+    xMin: xMin,
+    yMin: yMin,
+    xMax: xMax,
+    yMax: yMax
+  };
 }
 
 // polys is an array of polygone
