@@ -71,7 +71,7 @@ var selecting = false; // Flag for currently selecting pieces for merge
 var showRefPoint = false;
 var showPath = false;
 var showGrid = true
-var alignOnGrid = true;
+var alignOnGrid = false;
 var usePaint = false;
 var circuit = 1;
 var canvas;
