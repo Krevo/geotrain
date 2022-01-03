@@ -1342,48 +1342,51 @@ function makeOrientation(polys, path, cPoints, angle) {
   }
 }
 
+function bezier(t, p0, p1, p2, p3) {
+  var cX = 3 * (p1.x - p0.x),
+      bX = 3 * (p2.x - p1.x) - cX,
+      aX = p3.x - p0.x - cX - bX;
+
+  var cY = 3 * (p1.y - p0.y),
+      bY = 3 * (p2.y - p1.y) - cY,
+      aY = p3.y - p0.y - cY - bY;
+
+  var x = (aX * Math.pow(t, 3)) + (bX * Math.pow(t, 2)) + (cX * t) + p0.x;
+  var y = (aY * Math.pow(t, 3)) + (bY * Math.pow(t, 2)) + (cY * t) + p0.y;
+
+  return {x: x, y: y};
+}
+
 function _calculateRailSlice(angle, _reverse) {
 
   // Compute points
   var points = new Array();
   var pointsPath = new Array();
 
-  var radiusInt = 7*u;
-  var radiusExt = 7.5*u;
+  var w = 4; // Adjust Bezier curb by setting this point from 0 to 9u max
 
+  var accuracy = 0.05, //this'll give the bezier 10 segments
+      p0 = {x: -4.5*u, y: -2.5*u},
+      p1 = {x: (w-4.5)*u, y: -2.5*u},
+      p2 = {x: (4.5-w)*u, y: 0.5*u},
+      p3 = {x: 4.5*u, y: 0.5*u};
 
-  for (var i=-(Math.PI/2); i<=0; i=i+(Math.PI/2)/20) {
-     xi = -4.5*u+Math.cos(i)*radiusExt;
-     yi = 5*u+Math.sin(i)*radiusExt;
-     if (xi <= 0) {
-      points.push(new Array(xi,yi));
-     }
+  for (var i=0; i<1; i+=accuracy){
+     var p = bezier(i, p0, p1, p2, p3);
+     points.push(new Array(p.x, p.y));
   }
+  points.push(new Array(p3.x, p3.y));
 
+  var N = points.length;
 
-  for (var i=Math.PI; i>=Math.PI/2; i=i-(Math.PI/2)/20) {
-     xi = 4.5*u+Math.cos(i)*radiusExt;
-     yi = -7*u+Math.sin(i)*radiusExt;
-     if (xi >= 0) {
-      points.push(new Array(xi,yi));
-     }
+  for (var i=N-1; i>=0; i--) { // Copy the upper curve but lower and in reversed order.
+    yi = points[i][1]+2*u;
+    xi = points[i][0];
+    points.push(new Array(xi,yi));
+    y_old = yi;
   }
-
-
-    var N = points.length;
-
-    for (var i=N-1; i>=0; i--) { // Copy the upper curve but lower and in reversed order.
-      yi = points[i][1]+2*u;
-      xi = points[i][0];
-      points.push(new Array(xi,yi));
-      //pointsPath.push(new Array(xi,points[i][1]+u));
-      y_old = yi;
-    }
-    points.push(arrayCopy(points[0])); // Back to first point
-
   points.push(arrayCopy(points[0])); // Back to first point
 
-  // Re-compute middle path
   for (var i = N-1; i>0; i--) {
     pointsPath.push(new Array(points[i][0],points[i][1]+u,points[i-1][0],points[i-1][1]+u));
   }
@@ -1414,7 +1417,6 @@ function _calculateRailSlice(angle, _reverse) {
     paths : pointsPath,
     connectionsPoints : connectionsPoints
   }
-
 }
 
 function _calculateRailCourbe(radiusInt,radiusExt,angle, ouverture = Math.PI/2) {
