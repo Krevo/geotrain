@@ -49,8 +49,8 @@ const DEG180 = Math.PI;
  var ur = 15; // Current number of pixels for a square / grid width and height
 // ratio = 15/100 = 0,15
 
- var ur_min = 2;
- var ur_max = 35;
+ var ur_min = 5;
+ var ur_max = 50;
 
  var NE = 1;
  var SE = 2;
@@ -1343,16 +1343,39 @@ function makeOrientation(polys, path, cPoints, angle) {
 }
 
 function bezier(t, p0, p1, p2, p3) {
-  var cX = 3 * (p1.x - p0.x),
-      bX = 3 * (p2.x - p1.x) - cX,
-      aX = p3.x - p0.x - cX - bX;
+  var a0 =     - Math.pow(t, 3) + 3 * Math.pow(t, 2) -  3 * t + 1,
+      a1 =   3 * Math.pow(t, 3) - 6 * Math.pow(t, 2) +  3 * t,
+      a2 = - 3 * Math.pow(t, 3) + 3 * Math.pow(t, 2),
+      a3 =       Math.pow(t, 3);
 
-  var cY = 3 * (p1.y - p0.y),
-      bY = 3 * (p2.y - p1.y) - cY,
-      aY = p3.y - p0.y - cY - bY;
+  var x = a0 * p0.x
+        + a1 * p1.x
+        + a2 * p2.x
+        + a3 * p3.x;
 
-  var x = (aX * Math.pow(t, 3)) + (bX * Math.pow(t, 2)) + (cX * t) + p0.x;
-  var y = (aY * Math.pow(t, 3)) + (bY * Math.pow(t, 2)) + (cY * t) + p0.y;
+  var y = a0 * p0.y
+        + a1 * p1.y
+        + a2 * p2.y
+        + a3 * p3.y;
+
+  return {x: x, y: y};
+}
+
+function bezierDerivated(t, p0, p1, p2, p3) {
+  var a0 = - 3 * Math.pow(t, 2) +  6 * t - 3,
+      a1 =   9 * Math.pow(t, 2) - 12 * t + 3,
+      a2 = - 9 * Math.pow(t, 2) +  6 * t,
+      a3 =   3 * Math.pow(t, 2);
+
+  var x = a0 * p0.x
+        + a1 * p1.x
+        + a2 * p2.x
+        + a3 * p3.x;
+
+  var y = a0 * p0.y
+        + a1 * p1.y
+        + a2 * p2.y
+        + a3 * p3.y;
 
   return {x: x, y: y};
 }
@@ -1361,35 +1384,40 @@ function _calculateRailSlice(angle, _reverse) {
 
   // Compute points
   var points = new Array();
+  var pointsUp = new Array();
+  var pointsDown = new Array();
   var pointsPath = new Array();
 
   var w = 4; // Adjust Bezier curb by setting this point from 0 to 9u max
 
-  var accuracy = 0.05, //this'll give the bezier 10 segments
-      p0 = {x: -4.5*u, y: -2.5*u},
-      p1 = {x: (w-4.5)*u, y: -2.5*u},
-      p2 = {x: (4.5-w)*u, y: 0.5*u},
-      p3 = {x: 4.5*u, y: 0.5*u};
+  var accuracy = 5, //this'll give the bezier (100/accuracy) segments
+      p0 = {x: -4.5*u, y: -1.5*u},
+      p1 = {x: (w-4.5)*u, y: -1.5*u},
+      p2 = {x: (4.5-w)*u, y: 1.5*u},
+      p3 = {x: 4.5*u, y: 1.5*u};
 
-  for (var i=0; i<1; i+=accuracy){
-     var p = bezier(i, p0, p1, p2, p3);
-     points.push(new Array(p.x, p.y));
+  var previousPoint = undefined;
+  for (var i=0; i<=100; i+=accuracy){
+    var p = bezier(i/100, p0, p1, p2, p3);
+    if (previousPoint !== undefined) {
+      pointsPath.push(new Array(previousPoint.x, previousPoint.y, p.x, p.y));
+    }
+    var pprime = bezierDerivated(i/100, p0, p1, p2, p3); // give the tangent to the curve
+    var tgteSeg = Array(p.x, p.y, p.x + pprime.x, p.y + pprime.y);
+    normalizeVector(tgteSeg, u);
+    var segUp = arrayCopy(tgteSeg);
+    rotateFirstPoint(segUp, Math.PI / 2); // give the normal to the curve simply by rotating the tangent by 90° counterclock wise
+    pointsUp.push(new Array(segUp[2], segUp[3]));
+    var segDown = arrayCopy(tgteSeg);
+    rotateFirstPoint(segDown, - Math.PI / 2); // give the normal to the curve simply by rotating the tangent by 90° counterclock wise
+    pointsDown.push(new Array(segDown[2], segDown[3]));
+
+    previousPoint = p;
   }
-  points.push(new Array(p3.x, p3.y));
 
-  var N = points.length;
-
-  for (var i=N-1; i>=0; i--) { // Copy the upper curve but lower and in reversed order.
-    yi = points[i][1]+2*u;
-    xi = points[i][0];
-    points.push(new Array(xi,yi));
-    y_old = yi;
-  }
+  points = pointsUp.concat(reverseTab(pointsDown));
+  var N = pointsUp.length;
   points.push(arrayCopy(points[0])); // Back to first point
-
-  for (var i = N-1; i>0; i--) {
-    pointsPath.push(new Array(points[i][0],points[i][1]+u,points[i-1][0],points[i-1][1]+u));
-  }
 
   var connectionsPoints = new Array();
   connectionsPoints.push([pointsPath[0][0], pointsPath[0][1]]);
@@ -1557,6 +1585,7 @@ function drawConnectPoints(ctx,x,y,piece) {
 function drawNewPath(ctx,x,y,piece) {
 
   var points = piece.paths;
+
   var r = 2;
   if (!showPath) {
     return;
@@ -1587,6 +1616,7 @@ function drawNewPath(ctx,x,y,piece) {
     ctx.lineTo(x+(segment[2]*(ur/u)),y+(segment[3]*(ur/u)));
   }
   ctx.stroke();
+
 }
 
 function arrayCopy(tab) {
@@ -1628,6 +1658,33 @@ function reverse(points) {
       points[i][3] = points[i][3];
     }
   }
+}
+
+function rotateFirstPoint(segmentOfTwoPoints, angle) {
+    var M, O; // We will rotate point M around point O (center of rotation).
+	O = {x: segmentOfTwoPoints[0], y: segmentOfTwoPoints[1]};
+	M = {x: segmentOfTwoPoints[2], y: segmentOfTwoPoints[3]};
+    var xM, yM, x, y;
+    xM = M.x - O.x;
+    yM = M.y - O.y;
+    x = xM * Math.cos (angle) + yM * Math.sin (angle) + O.x;
+    y = - xM * Math.sin (angle) + yM * Math.cos (angle) + O.y;
+    segmentOfTwoPoints[2] = x;
+    segmentOfTwoPoints[3] = y;
+}
+
+// We will normalize at a size of l
+// Vector (x0,y0) => (x1,y1)
+function normalizeVector(segmentOfTwoPoints, l) {
+    var x0 = segmentOfTwoPoints[0],
+        y0 = segmentOfTwoPoints[1],
+        x1 = segmentOfTwoPoints[2],
+        y1 = segmentOfTwoPoints[3];
+    var d = Math.sqrt(Math.pow(x1 - x0, 2) + Math.pow(y1 - y0, 2));
+    x1 = x0 + l * (x1 - x0)/d;
+    y1 = y0 + l * (y1 - y0)/d;
+    segmentOfTwoPoints[2] = x1;
+    segmentOfTwoPoints[3] = y1;
 }
 
 function rotation(points,angle) {
